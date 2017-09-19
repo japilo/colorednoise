@@ -2,24 +2,31 @@
 % Please edit documentation in R/raw_noise.R
 \name{raw_noise}
 \alias{raw_noise}
-\title{This function generates temporally autocorrelated random numbers with a mean, standard deviation,
-and autocorrelation you specify.}
+\title{Generate autocorrelated noise}
 \usage{
 raw_noise(timesteps, mu, sigma, phi)
 }
 \arguments{
-\item{timesteps}{The number of temporally autocorrelated random numbers (one per timestep) you want.}
+\item{timesteps}{The number of temporally autocorrelated random numbers (one
+per timestep) you want.}
 
 \item{mu}{The mean of the temporally autocorrelated random numbers.}
 
-\item{sigma}{The standard deviation of the temporally autocorrelated random numbers.}
+\item{sigma}{The standard deviation of the temporally autocorrelated random
+numbers.}
 
-\item{phi}{The temporal autocorrelation. 0 is white noise (uncorrelated), positive values are red noise (correlated) and negative values are blue noise (inversely correlated).}
+\item{phi}{The temporal autocorrelation. 0 is white noise (uncorrelated),
+positive values are red noise (directly correlated) and negative values are blue
+noise (inversely correlated).}
 }
 \value{
 A vector of temporally autocorrelated random numbers.
 }
 \description{
-This function generates temporally autocorrelated random numbers with a mean, standard deviation,
-and autocorrelation you specify.
+This function generates temporally autocorrelated random numbers with a mean,
+standard deviation, and autocorrelation you specify.
+}
+\examples{
+rednoise <- raw_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+rednoise
 }

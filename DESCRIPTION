@@ -1,18 +1,18 @@
 Package: colorednoise
 Type: Package
 Title: Simulate Temporally Autocorrelated Population Time Series
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: c(person("Julia", "Pilowsky", email = "jap2178@caa.columbia.edu",
                   role = c("aut", "cre")),
            person("Elizabeth", "Crone", email = "elizabeth.crone@tufts.edu",
                   role = "ctb"))
 Description: Temporally autocorrelated populations are correlated in their vital rates (growth, death, etc.) from year to year. It is very common for populations, whether they be bacteria, plants, or humans, to be temporally autocorrelated. This poses a challenge for stochastic population modeling, because a temporally correlated population will behave differently from an uncorrelated one.
-    This package provides tools for simulating populations with white noise (no temporal autocorrelation), red noise (positive temporal autocorrelation), and blue noise (negative temporal autocorrelation). The simulations are based on an assumption of an asexually reproducing population, but it can also be used to simulate females of a sexually reproducing species.  
+    This package provides tools for simulating populations with white noise (no temporal autocorrelation), red noise (positive temporal autocorrelation), and blue noise (negative temporal autocorrelation). The simulations are based on an assumption of an asexually reproducing population, but it can also be used to simulate females of a sexually reproducing species.
 Depends: R (>= 3.3.2)
-Imports: 
-  boot (>= 1.3),
+Imports:
   dplyr (>= 0.7.3),
-  purrr (>= 0.2.3)
+  purrr (>= 0.2.3),
+  stats (>= 3.3.2)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
