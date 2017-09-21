@@ -57,10 +57,11 @@ timeseries <- function(start, timesteps, phi, survMean, survSd, fecundMean, fecu
     # new ones according to Ft probabilities, calculates population size and growth,
     # and steps time until 'timesteps' has been reached.
     count <- 0
-    population <- start
-    survivors <- vector()
-    newborns <- vector()
-    growth <- vector()
+    population <- vector(mode = "integer", length = timesteps + 1)
+    population[1] <- start
+    survivors <- vector(mode = "integer", length = timesteps)
+    newborns <- vector(mode = "integer", length = timesteps)
+    growth <- vector(mode = "integer", length = timesteps)
     while (count < timesteps) {
         count <- count + 1
         survivors[count] <- rbinom(n = 1, size = population[count], prob = St[count])
