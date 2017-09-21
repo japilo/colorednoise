@@ -18,7 +18,8 @@
 raw_noise <- function(timesteps, mu, sigma, phi) {
     delta <- mu * (1 - phi)
     variance <- sigma^2 * (1 - phi^2)
-    noise <- c(rnorm(1, mu, sigma))
+    noise <- vector(mode = "double", length = timesteps)
+    noise[1] <- c(rnorm(1, mu, sigma))
     for (i in (1:(timesteps - 1))) {
         noise[i + 1] <- delta + phi * noise[i] + rnorm(1, 0, sqrt(variance))
     }
