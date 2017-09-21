@@ -107,7 +107,7 @@ raw_estim_loop <- function(timesteps, mu, sigma, phi, replicates) {
     # Output a data frame where each row is the mean, SD, and AC of a noise vector
     labels <- raw_sims %>% map(1) %>% bind_rows()
     noise <- raw_sims %>% map(2) %>% flatten()
-    estimates <- data.frame(mean = map(noise, mean), sd = map(noise, sd), autocorrelation = map(noise,
+    estimates <- data.frame(mean = map_dbl(noise, mean), sd = map_dbl(noise, sd), autocorrelation = map_dbl(noise,
         autocorrelation))
     cbind(labels, estimates)
 }

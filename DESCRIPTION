@@ -18,3 +18,7 @@ Encoding: UTF-8
 LazyData: true
 BugReports: http://github.com/japilo/colorednoise/issues
 RoxygenNote: 6.0.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
