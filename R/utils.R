@@ -1,5 +1,5 @@
-#' Estimate the temporal autocorrelation of a numeric vector.
-#'
+#' Estimate the Temporal Autocorrelation of a Numeric Vector.
+#
 #' A wrapper for the \code{\link[stats]{acf}} function from the stats package that
 #' extracts only the temporal autocorrelation at a lag of one timestep (which is
 #' the type of temporal autocorrelation that this package simulates).

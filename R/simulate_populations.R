@@ -1,4 +1,4 @@
-#' Simulate a time series of a temporally autocorrelated population
+#' Simulate a Time Series of a Temporally Autocorrelated Population
 #'
 #' The backbone of this package, this function simulates a population with
 #' temporally autocorrelated vital rates (survival and fertility). In other
@@ -75,8 +75,8 @@ timeseries <- function(start, timesteps, phi, survMean, survSd, fecundMean, fecu
     data <- data.frame(timestep, newborns, survivors, population, growth)
     return(data)
 }
-#' Simulate temporally autocorrelated populations for every combination of
-#' parameters
+#' Simulate Temporally Autocorrelated Populations for Every Combination of
+#' Parameters
 #'
 #' Essentially a loop of \code{\link{timeseries}}, this function simulates a
 #' population with temporally autocorrelated vital rates for every combination
@@ -137,7 +137,7 @@ autocorr_sim <- function(timesteps, start, phi, survMean, survSd, fecundMean, fe
         population), est_fecund = newborns/survivors))
     return(sims)
 }
-#' Estimate autocorrelation in vital rates for a list of data frames.
+#' Estimate Autocorrelation in Vital Rates for a List of Data Frames.
 #'
 #' This function estimates the autocorrelation in vital rates (survival and
 #' fertility) for a list of data frames with a variable of estimated survival

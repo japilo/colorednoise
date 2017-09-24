@@ -1,4 +1,4 @@
-#' Generate autocorrelated noise
+#' Generate Autocorrelated Noise
 #'
 #' This function generates temporally autocorrelated random numbers with a mean,
 #' standard deviation, and autocorrelation you specify.
@@ -25,7 +25,7 @@ raw_noise <- function(timesteps, mu, sigma, phi) {
     }
     return(noise)
 }
-#' Estimate mean, SD, and autocorrelation of sample noise.
+#' Estimate Mean, SD, and Autocorrelation of Sample Noise.
 #'
 #' This function estimates the temporal autocorrelation of a vector of random
 #' numburs, as well as the sample mean and standard deviation. Try feeding it the output of \code{\link{raw_noise}}.
@@ -44,7 +44,7 @@ raw_estim <- function(noise) {
     names(output) <- c("Mean", "SD", "Autocorrelation")
     return(output)
 }
-#' Generate autocorrelated noise for every combination of the given parameters.
+#' Generate Autocorrelated Noise for Every Combination of the Given Parameters.
 #'
 #' This function generates sets of temporally autocorrelated random numbers for
 #' every possible combination of parameter values you specify. Essentially a
@@ -84,7 +84,7 @@ raw_noise_loop <- function(timesteps, mu, sigma, phi, replicates) {
     # Unnests the list ------------------
     map(raw_sims, 2) %>% flatten()
 }
-#' Simulation and estimation of colored noise
+#' Simulation and Estimation of Colored Noise
 #'
 #' This function simulates generates sets of temporally autocorrelated random
 #' numbers for every possible combination of parameter values you specify, then

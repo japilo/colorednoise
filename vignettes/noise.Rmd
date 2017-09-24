@@ -1,0 +1,84 @@
+---
+title: "Estimating Autocorrelation of Colored Noise"
+author: "Julia Pilowsky"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulate noise}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r preliminaries, echo = F, message = F}
+library("colorednoise")
+library("dplyr")
+library("ggplot2")
+```
+
+## What is colored noise? 
+
+Expressed in plain words, colored noise is a stochastic process wherein values tend to be correlated with other values nearby in space or time. Colored noise in spatial data sets is said to be spatially autocorrelated, while colored noise in time series is said to be temporally autocorrelated. In this package we only deal with the latter.
+
+Expressed in math, colored noise can be modeled with the following equation, where $\omega$ is a random standard normal variable, and $\epsilon$ is a temporally autocorrelated variable:
+
+$\epsilon_{t + 1} = k\epsilon_t + \omega_t\sqrt{1 - k^2}$
+
+Mathematically, we can also think of unautocorrelated stochasticity as random sine waves evenly distributed across all wavelengths, while autocorrelated stochasticity is biased either toward sine waves of long wavelengths (red) or short wavelengths (blue).
+
+Expressed graphically, colored noise looks like this:
+
+```{r comparing red and blue noise, echo = F}
+blue <- raw_noise(timesteps = 100, mu = 0.5, sigma = 0.2, phi = -0.5)
+red <- raw_noise(timesteps = 100, mu = 0.5, sigma = 0.2, phi = 0.5)
+ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") +
+  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
+ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + 
+  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
+```
+
+In the blue noise plot above, each random number is negatively correlated to the one preceding it. In the red noise plot, each random number is positively correlated to the one preceding it. 
+
+## Example: Bias and precision of autocorrelation estimates
+
+To show you how you can use this package to simulate and analyze colored noise, I will present a problem for us to solve. Let's say we want to find out whether our estimates of temporal autocorrelation are biased when the standard deviation of the colored noise is high. First, let's use the `raw_noise` function to generate some colored noise with high variance.
+
+```{r generate noise}
+red <- raw_noise(timesteps = 100, mu = 0.3, sigma = 1.2, phi = 0.5)
+red[1:10]
+blue <- raw_noise(timesteps = 100, mu = 0.3, sigma = 1.2, phi = -0.5)
+blue[1:10]
+ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") +
+  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
+ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + 
+  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
+```
+
+The red noise and blue noise look the way they should. Now let's estimate the mean, SD, and autocorrelation of these two sets of random numbers to see how well they match the parameters we used to generate them.
+
+```{r estimate noise}
+raw_estim(red)
+raw_estim(blue)
+```
+
+The estimates for these seem to be quite accurate. But let's try generating a whole lot of colored noise across a range of variance and color and estimating the autocorrelation of each replicate.
+
+```{r generate replicates}
+sd_range <- raw_estim_loop(timesteps = 50, mu = 0.3, sigma = c(0.5, 0.7, 0.9, 1.1, 1.3, 1.5), phi = c(-0.5, 0, 0.5), replicates = 30)
+head(sd_range)
+```
+
+We can visualize these results by finding the mean and confidence intervals of the autocorrelation estimates for each combination of variance and noise color, and plotting them out.
+
+```{r plot CIs}
+sd_range %>% group_by(phi, sigma) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[1]]})(.)),
+           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[2]]})(.)),
+           mean = mean(.)), .vars = vars(autocorrelation)) -> summ
+ggplot(summ, aes(x = sigma, y = mean)) +
+  geom_pointrange(aes(ymin = lower.ci, ymax = upper.ci, color = factor(phi)), size = 0.8) + 
+  geom_hline(yintercept = 0, linetype = 2, color = "#C0C0C0") +
+  geom_hline(yintercept = -0.5, linetype = 2, color = "#0033FF") +
+  geom_hline(yintercept = 0.5, linetype = 2, color = "#CC0000") +
+  theme(text=element_text(size=20)) + xlab("Standard Deviation") + ylab("Estimated Autocorrelation") + scale_colour_manual(values = c("#0033FF", "#C0C0C0", "#CC0000")) + labs(color="Noise color") + theme_light()
+```
+
+As we can see, the variance of the colored noise does not seem to affect the estimates of autocorrelation in any case. However, another interesting pattern emerges: the estimates of autocorrelation for red noise (phi = 0.5) are consistently biased too low. This may be because the number of timesteps we simulated (50) is too short to get a full measurement of the long wavelengths of red noise.

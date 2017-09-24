@@ -2,8 +2,8 @@
 % Please edit documentation in R/simulate_populations.R
 \name{autocorr_sim}
 \alias{autocorr_sim}
-\title{Simulate temporally autocorrelated populations for every combination of
-parameters}
+\title{Simulate Temporally Autocorrelated Populations for Every Combination of
+Parameters}
 \usage{
 autocorr_sim(timesteps, start, phi, survMean, survSd, fecundMean, fecundSd,
   replicates)

@@ -2,7 +2,10 @@
 % Please edit documentation in R/utils.R
 \name{autocorrelation}
 \alias{autocorrelation}
-\title{Estimate the temporal autocorrelation of a numeric vector.}
+\title{Estimate the Temporal Autocorrelation of a Numeric Vector.
+A wrapper for the \code{\link[stats]{acf}} function from the stats package that
+extracts only the temporal autocorrelation at a lag of one timestep (which is
+the type of temporal autocorrelation that this package simulates).}
 \usage{
 autocorrelation(x, na.action = na.pass)
 }
@@ -15,6 +18,7 @@ autocorrelation(x, na.action = na.pass)
 A single numeric value: the estimate of the temporal autocorrelation with a lag of 1.
 }
 \description{
+Estimate the Temporal Autocorrelation of a Numeric Vector.
 A wrapper for the \code{\link[stats]{acf}} function from the stats package that
 extracts only the temporal autocorrelation at a lag of one timestep (which is
 the type of temporal autocorrelation that this package simulates).

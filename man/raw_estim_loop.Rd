@@ -2,7 +2,7 @@
 % Please edit documentation in R/raw_noise.R
 \name{raw_estim_loop}
 \alias{raw_estim_loop}
-\title{Simulation and estimation of colored noise}
+\title{Simulation and Estimation of Colored Noise}
 \usage{
 raw_estim_loop(timesteps, mu, sigma, phi, replicates)
 }

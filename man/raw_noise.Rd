@@ -2,7 +2,7 @@
 % Please edit documentation in R/raw_noise.R
 \name{raw_noise}
 \alias{raw_noise}
-\title{Generate autocorrelated noise}
+\title{Generate Autocorrelated Noise}
 \usage{
 raw_noise(timesteps, mu, sigma, phi)
 }

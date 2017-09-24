@@ -2,7 +2,7 @@
 % Please edit documentation in R/raw_noise.R
 \name{raw_estim}
 \alias{raw_estim}
-\title{Estimate mean, SD, and autocorrelation of sample noise.}
+\title{Estimate Mean, SD, and Autocorrelation of Sample Noise.}
 \usage{
 raw_estim(noise)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_populations.R
 \name{timeseries}
 \alias{timeseries}
-\title{Simulate a time series of a temporally autocorrelated population}
+\title{Simulate a Time Series of a Temporally Autocorrelated Population}
 \usage{
 timeseries(start, timesteps, phi, survMean, survSd, fecundMean, fecundSd)
 }

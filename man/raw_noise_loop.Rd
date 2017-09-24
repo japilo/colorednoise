@@ -2,7 +2,7 @@
 % Please edit documentation in R/raw_noise.R
 \name{raw_noise_loop}
 \alias{raw_noise_loop}
-\title{Generate autocorrelated noise for every combination of the given parameters.}
+\title{Generate Autocorrelated Noise for Every Combination of the Given Parameters.}
 \usage{
 raw_noise_loop(timesteps, mu, sigma, phi, replicates)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_populations.R
 \name{autocorr_estim}
 \alias{autocorr_estim}
-\title{Estimate autocorrelation in vital rates for a list of data frames.}
+\title{Estimate Autocorrelation in Vital Rates for a List of Data Frames.}
 \usage{
 autocorr_estim(listdf, groupvars = NULL, survival_col = "est_surv",
   fertility_col = "est_fecund")
