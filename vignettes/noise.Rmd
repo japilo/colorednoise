@@ -13,6 +13,7 @@ vignette: >
 library("colorednoise")
 library("dplyr")
 library("ggplot2")
+library("purrr")
 ```
 
 ## What is colored noise? 
@@ -63,7 +64,7 @@ raw_estim(blue)
 The estimates for these seem to be quite accurate. But let's try generating a whole lot of colored noise across a range of variance and color and estimating the autocorrelation of each replicate.
 
 ```{r generate replicates}
-sd_range <- raw_estim_loop(timesteps = 50, mu = 0.3, sigma = c(0.5, 0.7, 0.9, 1.1, 1.3, 1.5), phi = c(-0.5, 0, 0.5), replicates = 30)
+sd_range <- raw_estim_loop(timesteps = 20, mu = 0.3, sigma = c(0.5, 0.7, 0.9, 1.1, 1.3, 1.5), phi = c(-0.5, 0, 0.5), replicates = 30)
 head(sd_range)
 ```
 
@@ -81,4 +82,55 @@ ggplot(summ, aes(x = sigma, y = mean)) +
   theme(text=element_text(size=20)) + xlab("Standard Deviation") + ylab("Estimated Autocorrelation") + scale_colour_manual(values = c("#0033FF", "#C0C0C0", "#CC0000")) + labs(color="Noise color") + theme_light()
 ```
 
-As we can see, the variance of the colored noise does not seem to affect the estimates of autocorrelation in any case. However, another interesting pattern emerges: the estimates of autocorrelation for red noise (phi = 0.5) are consistently biased too low. This may be because the number of timesteps we simulated (50) is too short to get a full measurement of the long wavelengths of red noise.
+As we can see, the variance of the colored noise does not seem to affect the estimates of autocorrelation in any case. However, another interesting pattern emerges: the estimates of autocorrelation for red noise (phi = 0.5) are consistently biased too low. This may be because the number of timesteps we simulated (20) is too short to get a full measurement of the long wavelengths of red noise. 
+
+Let's explore this possibility further.
+
+## Example: Estimating autocorrelation in colored noise populations
+
+We now suspect, based on estimates of colored noise, that long time series are required in order to detect positive temporal autocorrelation without bias. However, the problem becomes even more complex when we use colored noise to simulate populations. Now, the environmental stochasticity we're modeling as colored noise is compounded by demographic stochasticity, the random drift resulting from the discrete probability distribution of births and deaths, especially in small populations.
+
+To give an example of what I mean, let's model a small population with positively autocorrelated environmental stochasticity. This population is closed (no migration), assumes constant fertility and mortality for all individuals, and can be thought of as asexually reproducing or female-only.
+
+```{r model single population}
+set.seed(534)
+series1 <- timeseries(start=20, timesteps=20, phi=0.4, survMean=0.5, survSd=0.52, fecundMean=0.1, fecundSd=0.7)
+ggplot(series1, aes(x=timestep, y=population)) + geom_line()
+```
+
+This plot shows exactly the kind of drift that happens in small populations: a downward fluctuation in fertility results in a crash from which the population cannot recover.
+
+Now let's try addressing the question of whether short time series bias our estimates of autocorrelation in red noise populations. We can do this by simulating populations along a range of time series lengths and noise color. Let's try a full range from blue noise to red noise, and a range of time series lengths from five years to a hundred years.
+
+```{r simulate many populations}
+sims <- autocorr_sim(timesteps = seq(5, 60, 5), start = 200, phi = c(-0.5, -0.25, -0.2, -0.1, 0, 0.1, 0.2, 0.25, 0.5), survMean = 0.9, survSd = 0.6, fecundMean = 0.3, fecundSd = 0.7, replicates = 100)
+ggplot(sims[[6]], aes(x=timestep, y=population)) + geom_line()
+```
+
+Here we see one example of a population simulated by the function. 
+
+Now let's estimate the autocorrelation in each of these simulated populations. There is a utility function `autocorrelation` in this package that measures temporal autocorrelation at a time lag of 1.
+
+```{r estimate autocorrelation}
+sims %>% map(~group_by(., phi, timesteps)) %>% map(~summarize_at(., c("est_surv", "est_fecund"), funs(autocorrelation))) %>% bind_rows -> estimates
+```
+
+I find that this format of ggplot displays the estimates by noise color very nicely.
+
+```{r plotting estimates}
+estimates %>% group_by(phi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[1]]})(.)),
+           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[2]]})(.)),
+           mean = mean(.)), .vars = vars(est_surv, est_fecund)) -> summ2
+# Noise color values for the graph in hexadecimal
+noise = c("#0033FF", "#3366FF", "#6699FF", "#99CCFF", "#FFFFFF", "#FF9999", "#FF6666","#FF0000", "#CC0000")
+ggplot(summ2, aes(x=timesteps, y=est_surv_mean)) + geom_point(size=8, aes(color=factor(phi))) +
+# This creates confidence intervals around the autocorrelations  
+geom_pointrange(aes(ymin=est_surv_lower.ci, ymax=est_surv_upper.ci), size=0.8) + 
+  # Adds a line for the true autocorrelation value
+  geom_hline(aes(yintercept=phi), linetype=2) +
+# This facets the plots by true autocorrelation value  
+facet_wrap( ~ phi) + 
+# This increases the font size and labels everything nicely  
+  theme(text=element_text(size=13)) + xlab("Time series lengths") + ylab("Estimated Autocorrelation") + scale_colour_manual(values=noise) + labs(color="Noise color") + ggtitle("Bias in estimates of autocorrelation of survival") + scale_y_continuous(limits=c(-0.85, 0.75))
+```
+We can see here that autocorrelation estimates are biased negative at short time lengths, especially for populations with positive temporal autocorrelation - when the time series is only 5 timesteps, all of the red noise populations read as white noise populations. When autocorrelation is strongly negative, as in the population at -0.5, short time lengths are slightly positively biased.
