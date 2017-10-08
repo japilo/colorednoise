@@ -48,6 +48,14 @@ fertility are the same at all ages, in every timestep they either produce 0
 or 1 offspring, and that individuals continue to be reproductively capable
 until they die.
 }
+\details{
+Be advised that not all combinations of values will work. Certain combinations
+of mean and SD for survival and fecundity are very unrealistic for real
+populations, and you'll end up with mostly NAs in your output. Use common sense
+as a demogropher / population biologist; if you give the timeseries function
+a mean fecundity of 0.9 and a SD of 1, you're going to break the simulation
+and get NA values.
+}
 \examples{
 series1 <- timeseries(start = 20, timesteps = 10, phi = 0.4, survMean = 0.6,
 survSd = 0.52, fecundMean = 0.3, fecundSd = 0.7)

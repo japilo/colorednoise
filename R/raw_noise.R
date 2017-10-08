@@ -92,6 +92,7 @@ raw_noise_loop <- function(timesteps, mu, sigma, phi, replicates) {
 #' random numbers so generated. Internally, the function does the same thing as
 #' \code{\link{raw_noise_loop}}, but instead of outputting the random numbers, it
 #' outputs measures of each set of random numbers.
+#' @importFrom dplyr bind_rows
 #' @inheritParams raw_noise_loop
 #' @return A data frame with one row for each set of random numbers. The
 #'   variables are mean, SD, autocorrelation, and the four parameters used to

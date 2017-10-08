@@ -1,3 +1,4 @@
+
 #' Simulate a Time Series of a Temporally Autocorrelated Population
 #'
 #' The backbone of this package, this function simulates a population with
@@ -10,6 +11,13 @@
 #' fertility are the same at all ages, in every timestep they either produce 0
 #' or 1 offspring, and that individuals continue to be reproductively capable
 #' until they die.
+#'
+#' Be advised that not all combinations of values will work. Certain combinations
+#' of mean and SD for survival and fecundity are very unrealistic for real
+#' populations, and you'll end up with mostly NAs in your output. Use common sense
+#' as a demogropher / population biologist; if you give the timeseries function
+#' a mean fecundity of 0.9 and a SD of 1, you're going to break the simulation
+#' and get NA values.
 #' @import stats
 #' @param start The starting population size.
 #' @param timesteps The number of timesteps you want to simulate. Individuals
@@ -133,40 +141,8 @@ autocorr_sim <- function(timesteps, start, phi, survMean, survSd, fecundMean, fe
         }
     }
     # Unnests the list and adds estimates of survival and fertility
-    sims <- labeled_sims %>% flatten() %>% map(~mutate(., est_surv = survivors/(growth -
-        population), est_fecund = newborns/survivors))
+    sims <- labeled_sims %>% flatten() %>%
+      map(~mutate(., est_surv = survivors/(population - growth),
+                  est_fecund = newborns/survivors))
     return(sims)
-}
-#' Estimate Autocorrelation in Vital Rates for a List of Data Frames.
-#'
-#' This function estimates the autocorrelation in vital rates (survival and
-#' fertility) for a list of data frames with a variable of estimated survival
-#' and fertility, e.g. the output of \code{\link{autocorr_sim}}, though you can
-#' use it on any list of data frames with a similar structure. You can also
-#' group the autocorrelation estimates by any variable that occurs in all the
-#' data frames in the list.
-#' @importFrom dplyr group_by_at summarize_at bind_rows funs
-#' @param listdf The list of data frames.
-#' @param groupvars The variables you want to group by (e.g., timesteps).
-#' @param survival_col The name of the survival variable. The default value is
-#'   'est_surv', which is what the variable is called in the output of
-#'   \code{\link{autocorr_sim}}.
-#' @param fertility_col The name of the fertility variable. The default value is
-#'   'est_fecund', which is what the variable is called in the output of
-#'   \code{\link{autocorr_sim}}.
-#' @return A data frame with one column for the sample autocorrelation of the
-#'   survival, one for the sample autocorrelation of the fertility, and one
-#'   column for each grouping variable specified in the function call.
-#' @examples
-#' survival_range <- autocorr_sim(timesteps = 30, start = 200, phi = 0.3,
-#'                                survMean = c(0.1, 0.2, 0.3, 0.4, 0.5), survSd = 0.5,
-#'                                fecundMean = 0.6, fecundSd = 0.5, replicates = 50)
-#' estimates <- autocorr_estim(survival_range, groupvars = 'survMean')
-#' head(estimates)
-#' @export
-autocorr_estim <- function(listdf, groupvars = NULL, survival_col = "est_surv",
-    fertility_col = "est_fecund") {
-    . <- NULL
-    listdf %>% map(~group_by_at(., groupvars)) %>% map(~summarize_at(., c(survival_col,
-        fertility_col), funs(autocorrelation))) %>% bind_rows()
 }
