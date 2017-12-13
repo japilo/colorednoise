@@ -5,7 +5,7 @@
 #' temporally autocorrelated vital rates (survival and fertility). In other
 #' words, this function will show you the dynamics over time of a population
 #' whose survival and fertility is stochastic, but also correlated to the
-#' survival and fertility in the previous year. The assumptions of the
+#' survival and fertility in the previous year, respectively. The assumptions of the
 #' simulation are that the population is asexually reproducing or female-only,
 #' individuals are able to reproduce in their first timestep, survival and
 #' fertility are the same at all ages, in every timestep they either produce 0
@@ -24,39 +24,40 @@
 #'   are added and killed off every timestep according to the survival and
 #'   fertility rates. In ecological applications, timesteps are usually years,
 #'   but theoretically they can be any length of time.
-#' @param phi The temporal autocorrelation. 0 is white noise (uncorrelated),
+#' @param survPhi The temporal autocorrelation of survival. 0 is white noise (uncorrelated),
 #'   positive values are red noise (directly correlated) and negative values are
 #'   blue noise (inversely correlated).
+#' @parm fecundPhi The temporal autocorrelation of fecundity. As above.
 #' @param survMean The mean survival from timestep to timestep. Must be a value
 #'   between 0 (all individuals die) and 1 (all individuals live).
 #' @param survSd The standard deviation of the survival from timestep to
 #'   timestep. Must be a value between 0 and 1.
-#' @param fecundMean The mean fertility. Must be a number from 0 (no one
+#' @param fecundMean The mean fecundity. Must be a number from 0 (no one
 #'   reproduces) to 1 (everyone reproduces).
-#' @param fecundSd The standard deviation of the fertility. Must be a number
+#' @param fecundSd The standard deviation of the fecundity. Must be a number
 #'   from 0 to 1.
 #' @return A data frame with five variables: timestep, newborns (new individuals
 #'   added this timestep), survivors (individuals alive last year who survived
 #'   this timestep), population (total individuals alive), and growth (the
 #'   increase or decrease in population size from last year).
 #' @examples
-#' series1 <- timeseries(start = 20, timesteps = 10, phi = 0.4, survMean = 0.6,
+#' series1 <- timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
 #' survSd = 0.52, fecundMean = 0.3, fecundSd = 0.7)
 #' head(series1)
 #' @export
-timeseries <- function(start, timesteps, phi, survMean, survSd, fecundMean, fecundSd) {
+timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
     # These lines generate the temporally autocorrelated random numbers ----
-    delta <- qlogis(survMean) * (1 - phi)
-    variance <- qlogis(survSd)^2 * (1 - phi^2)
+    delta <- qlogis(survMean) * (1 - survPhi)
+    variance <- qlogis(survSd)^2 * (1 - survPhi^2)
     x <- c(rnorm(1, qlogis(survMean), qlogis(survSd)))
     for (i in (1:(timesteps - 1))) {
-        x[i + 1] <- delta + phi * x[i] + rnorm(1, 0, sqrt(variance))
+        x[i + 1] <- delta + survPhi * x[i] + rnorm(1, 0, sqrt(variance))
     }
-    delta <- qlogis(fecundMean) * (1 - phi)
-    variance <- qlogis(fecundSd)^2 * (1 - phi^2)
+    delta <- qlogis(fecundMean) * (1 - fecundPhi)
+    variance <- qlogis(fecundSd)^2 * (1 - fecundPhi^2)
     y <- c(rnorm(1, qlogis(fecundMean), qlogis(fecundSd)))
     for (i in (1:(timesteps - 1))) {
-        y[i + 1] <- delta + phi * y[i] + rnorm(1, 0, sqrt(variance))
+        y[i + 1] <- delta + fecundPhi * y[i] + rnorm(1, 0, sqrt(variance))
     }
     # Transforming the random numbers into probabilities of fecundity and survival
     St <- plogis(x)
@@ -99,9 +100,10 @@ timeseries <- function(start, timesteps, phi, survMean, survSd, fecundMean, fecu
 #'   are added and killed off every timestep according to the survival and
 #'   fertility rates. Can be a scalar or a vector of values to loop over.
 #' @param start The starting population size. Can be a scalar or vector.
-#' @param phi The temporal autocorrelation. 0 is white noise (uncorrelated),
+#' @param survPhi The temporal autocorrelation of survival. 0 is white noise (uncorrelated),
 #'   positive values are red noise (directly correlated) and negative values are
 #'   blue noise (inversely correlated). Can be a scalar or a vector.
+#' @param fecundPhi The temporal autocorrelation of fecundity. As above.
 #' @param survMean The mean survival from timestep to timestep. Must be a value
 #'   between 0 (all individuals die) and 1 (all individuals live). Can be a scalar
 #'   or a vector.
@@ -120,16 +122,16 @@ timeseries <- function(start, timesteps, phi, survMean, survSd, fecundMean, fecu
 #'   year), estimated survival in the timestep, estimated fecundity in the
 #'   timestep, and the seven parameters used to generate the simulation.
 #' @examples
-#' survival_range <- autocorr_sim(timesteps = 30, start = 200, phi = 0.3,
+#' survival_range <- autocorr_sim(timesteps = 30, start = 200, survPhi = 0.3, fecundPhi = 0.1,
 #'                                survMean = c(0.2, 0.3, 0.4, 0.5, 0.6), survSd = 0.5,
 #'                                fecundMean = 0.6, fecundSd = 0.5, replicates = 50)
 #' head(survival_range[[1]])
 #' @export
-autocorr_sim <- function(timesteps, start, phi, survMean, survSd, fecundMean, fecundSd,
+autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd,
     replicates) {
     . <- NULL
     # Simulates a population for each combination of parameters -----------
-    raw_sims <- cross_df(list(start = start, timesteps = timesteps, phi = phi, survMean = survMean,
+    raw_sims <- cross_df(list(start = start, timesteps = timesteps, survPhi = survPhi, fecundPhi = fecundPhi, survMean = survMean,
         survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd)) %>% rerun(.n = replicates,
         pmap(., timeseries))
     # Labels each simulation with the parameters that generated it ------

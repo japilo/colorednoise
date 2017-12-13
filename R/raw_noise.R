@@ -2,6 +2,8 @@
 #'
 #' This function estimates the temporal autocorrelation of a vector of random
 #' numburs, as well as the sample mean and standard deviation. Try feeding it the output of \code{\link{raw_noise}}.
+#' @useDynLib colorednoise
+#' @importFrom Rcpp sourceCpp
 #' @param noise The vector of random numbers.
 #' @return A labeled vector with the sample mean, sample SD, and sample
 #'   autocorrelation.

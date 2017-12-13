@@ -13,7 +13,7 @@ Imports:
   dplyr (>= 0.7.3),
   purrr (>= 0.2.3),
   stats (>= 3.3.2),
-    Rcpp
+  Rcpp (>= 0.12.13)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

@@ -23,13 +23,13 @@ NumericVector raw_noise(int timesteps, double mu, double sigma, double phi) {
   double delta = mu * (1 - phi);
   double variance = pow(sigma, 2.0) * (1 - pow(phi, 2.0));
   NumericVector noise = no_init(timesteps);
-  noise[1] = R::rnorm(mu, sigma);
+  NumericVector draws = Rcpp::rnorm(timesteps, 0, sqrt(variance));
+  noise[0] = R::rnorm(mu, sigma);
   for(int i = 0; i < timesteps; ++i) {
-    noise[i+1] = delta + phi*noise[i] + R::rnorm(0, sqrt(variance));
+    noise[i+1] = delta + phi*noise[i] + draws[i];
   }
   return noise;
 }
-
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically
