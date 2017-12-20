@@ -8,16 +8,13 @@
 #' survival and fertility in the previous year, respectively. The assumptions of the
 #' simulation are that the population is asexually reproducing or female-only,
 #' individuals are able to reproduce in their first timestep, survival and
-#' fertility are the same at all ages, in every timestep they either produce 0
-#' or 1 offspring, and that individuals continue to be reproductively capable
+#' fertility are the same at all ages, and that individuals continue to be reproductively capable
 #' until they die.
 #'
 #' Be advised that not all combinations of values will work. Certain combinations
-#' of mean and SD for survival and fecundity are very unrealistic for real
+#' of mean and SD for survival and fertility are very unrealistic for real
 #' populations, and you'll end up with mostly NAs in your output. Use common sense
-#' as a demogropher / population biologist; if you give the timeseries function
-#' a mean fecundity of 0.9 and a SD of 1, you're going to break the simulation
-#' and get NA values.
+#' as a demogropher / population biologist.
 #' @import stats
 #' @param start The starting population size.
 #' @param timesteps The number of timesteps you want to simulate. Individuals
@@ -27,22 +24,20 @@
 #' @param survPhi The temporal autocorrelation of survival. 0 is white noise (uncorrelated),
 #'   positive values are red noise (directly correlated) and negative values are
 #'   blue noise (inversely correlated).
-#' @parm fecundPhi The temporal autocorrelation of fecundity. As above.
+#' @param fecundPhi The temporal autocorrelation of fecundity. As above.
 #' @param survMean The mean survival from timestep to timestep. Must be a value
 #'   between 0 (all individuals die) and 1 (all individuals live).
 #' @param survSd The standard deviation of the survival from timestep to
 #'   timestep. Must be a value between 0 and 1.
-#' @param fecundMean The mean fecundity. Must be a number from 0 (no one
-#'   reproduces) to 1 (everyone reproduces).
-#' @param fecundSd The standard deviation of the fecundity. Must be a number
-#'   from 0 to 1.
+#' @param fecundMean The mean fertility: mean offspring produced by each individual per timestep.
+#' @param fecundSd The standard deviation of the fertility.
 #' @return A data frame with five variables: timestep, newborns (new individuals
 #'   added this timestep), survivors (individuals alive last year who survived
 #'   this timestep), population (total individuals alive), and growth (the
 #'   increase or decrease in population size from last year).
 #' @examples
 #' series1 <- timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
-#' survSd = 0.52, fecundMean = 0.3, fecundSd = 0.7)
+#' survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
 #' head(series1)
 #' @export
 timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
@@ -53,15 +48,15 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
     for (i in (1:(timesteps - 1))) {
         x[i + 1] <- delta + survPhi * x[i] + rnorm(1, 0, sqrt(variance))
     }
-    delta <- qlogis(fecundMean) * (1 - fecundPhi)
-    variance <- qlogis(fecundSd)^2 * (1 - fecundPhi^2)
-    y <- c(rnorm(1, qlogis(fecundMean), qlogis(fecundSd)))
+    delta <- log(1/fecundMean) * (1 - fecundPhi)
+    variance <- abs(log(fecundSd))^2 * (1 - fecundPhi^2)
+    y <- c(rnorm(1, log(1/fecundMean), abs(log(fecundSd))))
     for (i in (1:(timesteps - 1))) {
         y[i + 1] <- delta + fecundPhi * y[i] + rnorm(1, 0, sqrt(variance))
     }
     # Transforming the random numbers into probabilities of fecundity and survival
     St <- plogis(x)
-    Ft <- plogis(y)
+    Ft <- exp(y)
     # This while loop kills some individuals according to St probabilities, creates
     # new ones according to Ft probabilities, calculates population size and growth,
     # and steps time until 'timesteps' has been reached.
@@ -74,7 +69,7 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
     while (count < timesteps) {
         count <- count + 1
         survivors[count] <- rbinom(n = 1, size = population[count], prob = St[count])
-        newborns[count] <- rbinom(n = 1, size = survivors[count], prob = Ft[count])
+        newborns[count] <- sum(rpois(n = survivors[count], lambda = Ft[count]))
         growth[count] <- -(population[count] - survivors[count]) + newborns[count]
         population[count + 1] <- population[count] + growth[count]
     }
@@ -109,10 +104,8 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
 #'   or a vector.
 #' @param survSd The standard deviation of the survival from timestep to
 #'   timestep. Must be a value between 0 and 1. Can be a scalar or a vector.
-#' @param fecundMean The mean fertility. Must be a number from 0 (no one
-#'   reproduces) to 1 (everyone reproduces). Can be a scalar or a vector.
-#' @param fecundSd The standard deviation of the fertility. Must be a number
-#'   from 0 to 1. Can be a scalar or a vector of values.
+#' @param fecundMean The mean fertility: mean offspring produced by each individual per timestep. Can be a scalar or a vector.
+#' @param fecundSd The standard deviation of the fertility. Can be a scalar or a vector of values.
 #' @param replicates How many replicates you would like of each possible
 #'   combination of parameters.
 #' @return A list of data frames, each with fourteen variables: timestep,
@@ -124,7 +117,7 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
 #' @examples
 #' survival_range <- autocorr_sim(timesteps = 30, start = 200, survPhi = 0.3, fecundPhi = 0.1,
 #'                                survMean = c(0.2, 0.3, 0.4, 0.5, 0.6), survSd = 0.5,
-#'                                fecundMean = 0.6, fecundSd = 0.5, replicates = 50)
+#'                                fecundMean = 1.6, fecundSd = 0.5, replicates = 50)
 #' head(survival_range[[1]])
 #' @export
 autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd,
