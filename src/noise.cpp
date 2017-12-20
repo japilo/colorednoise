@@ -22,11 +22,10 @@ using namespace Rcpp;
 NumericVector raw_noise(int timesteps, double mu, double sigma, double phi) {
   double delta = mu * (1 - phi);
   double variance = pow(sigma, 2.0) * (1 - pow(phi, 2.0));
-  NumericVector noise = no_init(timesteps);
-  NumericVector draws = Rcpp::rnorm(timesteps, 0, sqrt(variance));
+  NumericVector noise(timesteps);
   noise[0] = R::rnorm(mu, sigma);
-  for(int i = 0; i < timesteps; ++i) {
-    noise[i+1] = delta + phi*noise[i] + draws[i];
+  for(int i = 0; i < timesteps-1; ++i) {
+    noise[i+1] = delta + phi*noise[i] + R::rnorm(0, sqrt(variance));
   }
   return noise;
 }
