@@ -48,9 +48,9 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
     for (i in (1:(timesteps - 1))) {
         x[i + 1] <- delta + survPhi * x[i] + rnorm(1, 0, sqrt(variance))
     }
-    delta <- log(1/fecundMean) * (1 - fecundPhi)
+    delta <- log(fecundMean) * (1 - fecundPhi)
     variance <- abs(log(fecundSd))^2 * (1 - fecundPhi^2)
-    y <- c(rnorm(1, log(1/fecundMean), abs(log(fecundSd))))
+    y <- c(rnorm(1, log(fecundMean), abs(log(fecundSd))))
     for (i in (1:(timesteps - 1))) {
         y[i + 1] <- delta + fecundPhi * y[i] + rnorm(1, 0, sqrt(variance))
     }
@@ -69,7 +69,7 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
     while (count < timesteps) {
         count <- count + 1
         survivors[count] <- rbinom(n = 1, size = population[count], prob = St[count])
-        newborns[count] <- sum(rpois(n = survivors[count], lambda = Ft[count]))
+        newborns[count] <- sum(as.numeric(rpois(n = survivors[count], lambda = Ft[count])))
         growth[count] <- -(population[count] - survivors[count]) + newborns[count]
         population[count + 1] <- population[count] + growth[count]
     }
