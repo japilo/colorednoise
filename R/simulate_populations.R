@@ -54,11 +54,11 @@ timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, f
     for (i in (1:(timesteps - 1))) {
         y[i + 1] <- delta + fecundPhi * y[i] + rnorm(1, 0, sqrt(variance))
     }
-    # Transforming the random numbers into probabilities of fecundity and survival
+    # Transforming the random numbers into fecundity and survival on the response scale
     St <- plogis(x)
     Ft <- exp(y)
     # This while loop kills some individuals according to St probabilities, creates
-    # new ones according to Ft probabilities, calculates population size and growth,
+    # new ones according to Ft counts, calculates population size and growth,
     # and steps time until 'timesteps' has been reached.
     count <- 0
     population <- vector(mode = "integer", length = timesteps + 1)
