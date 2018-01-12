@@ -22,3 +22,11 @@ raw_noise <- function(timesteps, mu, sigma, phi) {
     .Call('_colorednoise_raw_noise', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi)
 }
 
+timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
+    .Call('_colorednoise_timeseries', PACKAGE = 'colorednoise', start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
+}
+
+timeseries_loop <- function(params) {
+    .Call('_colorednoise_timeseries_loop', PACKAGE = 'colorednoise', params)
+}
+

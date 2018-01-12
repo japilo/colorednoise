@@ -19,9 +19,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// timeseries
+DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd);
+RcppExport SEXP _colorednoise_timeseries(SEXP startSEXP, SEXP timestepsSEXP, SEXP survPhiSEXP, SEXP fecundPhiSEXP, SEXP survMeanSEXP, SEXP survSdSEXP, SEXP fecundMeanSEXP, SEXP fecundSdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type start(startSEXP);
+    Rcpp::traits::input_parameter< int >::type timesteps(timestepsSEXP);
+    Rcpp::traits::input_parameter< double >::type survPhi(survPhiSEXP);
+    Rcpp::traits::input_parameter< double >::type fecundPhi(fecundPhiSEXP);
+    Rcpp::traits::input_parameter< double >::type survMean(survMeanSEXP);
+    Rcpp::traits::input_parameter< double >::type survSd(survSdSEXP);
+    Rcpp::traits::input_parameter< double >::type fecundMean(fecundMeanSEXP);
+    Rcpp::traits::input_parameter< double >::type fecundSd(fecundSdSEXP);
+    rcpp_result_gen = Rcpp::wrap(timeseries(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// timeseries_loop
+List timeseries_loop(List params);
+RcppExport SEXP _colorednoise_timeseries_loop(SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(timeseries_loop(params));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_colorednoise_raw_noise", (DL_FUNC) &_colorednoise_raw_noise, 4},
+    {"_colorednoise_timeseries", (DL_FUNC) &_colorednoise_timeseries, 8},
+    {"_colorednoise_timeseries_loop", (DL_FUNC) &_colorednoise_timeseries_loop, 1},
     {NULL, NULL, 0}
 };
 
