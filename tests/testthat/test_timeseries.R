@@ -4,20 +4,20 @@ context("Autocorrelation of timeseries output")
 
 test_that("timeseries can produce blue noise populations", {
   rerun(.n = 1000,
-        timeseries(start = 200, timesteps = 50, survPhi = -0.4, survMean = 0.9,
-        survSd = 0.6, fecundPhi = -0.4, fecundMean = 0.2, fecundSd = 0.7)) %>%
-    map(~mutate(., est_surv = survivors/(population - growth),
+        timeseries(start = 200, timesteps = 50, survPhi = -0.4, survMean = 0.6,
+        survSd = 0.3, fecundPhi = 0, fecundMean = 0.9, fecundSd = 0.7)) %>%
+    map(~mutate(., est_surv = survivors/population,
                 est_fecund = newborns/survivors)) %>%
     map_dbl(~autocorrelation(.$est_surv)) -> test_blue
-  expect_true(mean(test_blue) < -0.1)
+  expect_true(mean(test_blue) < -0.2)
 })
 
 test_that("timeseries can produce red noise populations", {
   rerun(.n = 1000,
-        timeseries(start = 200, timesteps = 50, survPhi = 0.4, survMean = 0.9,
-                   survSd = 0.6, fecundPhi = 0.4, fecundMean = 0.2, fecundSd = 0.7)) %>%
-    map(~mutate(., est_surv = survivors/(population - growth),
+        timeseries(start = 200, timesteps = 50, survPhi = 0.4, survMean = 0.6,
+                   survSd = 0.3, fecundPhi = 0, fecundMean = 0.8, fecundSd = 0.5)) %>%
+    map(~mutate(., est_surv = survivors/population,
                 est_fecund = newborns/survivors)) %>%
     map_dbl(~autocorrelation(.$est_surv)) -> test_red
-  expect_true(mean(test_red) > 0.1)
+  expect_true(mean(test_red) > 0.2)
 })

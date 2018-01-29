@@ -31,10 +31,8 @@ Expressed graphically, colored noise looks like this:
 ```{r comparing red and blue noise, echo = F}
 blue <- raw_noise(timesteps = 100, mu = 0.5, sigma = 0.2, phi = -0.5)
 red <- raw_noise(timesteps = 100, mu = 0.5, sigma = 0.2, phi = 0.5)
-ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") +
-  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
-ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + 
-  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
+ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
+ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
 ```
 
 In the blue noise plot above, each random number is negatively correlated to the one preceding it. In the red noise plot, each random number is positively correlated to the one preceding it. 
@@ -48,10 +46,8 @@ red <- raw_noise(timesteps = 100, mu = 0.3, sigma = 1.2, phi = 0.5)
 red[1:10]
 blue <- raw_noise(timesteps = 100, mu = 0.3, sigma = 1.2, phi = -0.5)
 blue[1:10]
-ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") +
-  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
-ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + 
-  theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
+ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
+ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
 ```
 
 The red noise and blue noise look the way they should. Now let's estimate the mean, SD, and autocorrelation of these two sets of random numbers to see how well they match the parameters we used to generate them.
@@ -93,17 +89,15 @@ We now suspect, based on estimates of colored noise, that long time series are r
 To give an example of what I mean, let's model a small population with positively autocorrelated environmental stochasticity. This population is closed (no migration), assumes constant fertility and mortality for all individuals, and can be thought of as asexually reproducing or female-only.
 
 ```{r model single population}
-set.seed(534)
-series1 <- timeseries(start=20, timesteps=20, phi=0.4, survMean=0.5, survSd=0.52, fecundMean=0.1, fecundSd=0.7)
+set.seed(3935)
+series1 <- timeseries(start=20, timesteps=20, survPhi=0.4, fecundPhi=0.4, survMean=0.5, survSd=0.2, fecundMean=1, fecundSd=0.7)
 ggplot(series1, aes(x=timestep, y=population)) + geom_line()
 ```
 
-This plot shows exactly the kind of drift that happens in small populations: a downward fluctuation in fertility results in a crash from which the population cannot recover.
-
-Now let's try addressing the question of whether short time series bias our estimates of autocorrelation in red noise populations. We can do this by simulating populations along a range of time series lengths and noise color. Let's try a full range from blue noise to red noise, and a range of time series lengths from five years to a hundred years.
+Now let's try addressing the question of whether short time series bias our estimates of autocorrelation in red noise populations. We can do this by simulating populations along a range of time series lengths and noise color. Let's try a full range from blue noise to red noise in the survival vital rate, and a range of time series lengths from five years to a hundred years.
 
 ```{r simulate many populations}
-sims <- autocorr_sim(timesteps = seq(5, 60, 5), start = 200, phi = c(-0.5, -0.25, -0.2, -0.1, 0, 0.1, 0.2, 0.25, 0.5), survMean = 0.9, survSd = 0.6, fecundMean = 0.3, fecundSd = 0.7, replicates = 100)
+sims <- autocorr_sim(timesteps = seq(5, 60, 5), start = 200, survPhi = c(-0.5, -0.25, -0.2, -0.1, 0, 0.1, 0.2, 0.25, 0.5), fecundPhi = 0, survMean = 0.5, survSd = 0.1, fecundMean = 0.8, fecundSd = 0.1, replicates = 100)
 ggplot(sims[[6]], aes(x=timestep, y=population)) + geom_line()
 ```
 
@@ -112,24 +106,24 @@ Here we see one example of a population simulated by the function.
 Now let's estimate the autocorrelation in each of these simulated populations. There is a utility function `autocorrelation` in this package that measures temporal autocorrelation at a time lag of 1.
 
 ```{r estimate autocorrelation}
-sims %>% map(~group_by(., phi, timesteps)) %>% map(~summarize_at(., c("est_surv", "est_fecund"), funs(autocorrelation))) %>% bind_rows -> estimates
+sims %>% map(~group_by(., survPhi, timesteps)) %>% map(~summarize(., acf.surv = autocorrelation(est_surv))) %>% bind_rows -> estimates
 ```
 
 I find that this format of ggplot displays the estimates by noise color very nicely.
 
 ```{r plotting estimates}
-estimates %>% group_by(phi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[1]]})(.)),
-           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[2]]})(.)),
-           mean = mean(.)), .vars = vars(est_surv, est_fecund)) -> summ2
+estimates %>% group_by(survPhi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[1]]})(.)),
+           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[2]]})(.)),
+           mean = mean(., na.rm = T)), .vars = vars(acf.surv)) -> summ2
 # Noise color values for the graph in hexadecimal
 noise = c("#0033FF", "#3366FF", "#6699FF", "#99CCFF", "#FFFFFF", "#FF9999", "#FF6666","#FF0000", "#CC0000")
-ggplot(summ2, aes(x=timesteps, y=est_surv_mean)) + geom_point(size=8, aes(color=factor(phi))) +
+ggplot(summ2, aes(x=timesteps, y=mean)) + geom_point(size=8, aes(color=factor(survPhi))) +
 # This creates confidence intervals around the autocorrelations  
-geom_pointrange(aes(ymin=est_surv_lower.ci, ymax=est_surv_upper.ci), size=0.8) + 
+geom_pointrange(aes(ymin=lower.ci, ymax=upper.ci), size=0.8) + 
   # Adds a line for the true autocorrelation value
-  geom_hline(aes(yintercept=phi), linetype=2) +
+  geom_hline(aes(yintercept=survPhi), linetype=2) +
 # This facets the plots by true autocorrelation value  
-facet_wrap( ~ phi) + 
+facet_wrap( ~ survPhi) + 
 # This increases the font size and labels everything nicely  
   theme(text=element_text(size=13)) + xlab("Time series lengths") + ylab("Estimated Autocorrelation") + scale_colour_manual(values=noise) + labs(color="Noise color") + ggtitle("Bias in estimates of autocorrelation of survival") + scale_y_continuous(limits=c(-0.85, 0.75))
 ```

@@ -22,11 +22,46 @@ raw_noise <- function(timesteps, mu, sigma, phi) {
     .Call('_colorednoise_raw_noise', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi)
 }
 
+#' Simulated Time Series of an Unstructured Temporally Autocorrelated Population
+#'
+#' This function simulates an unstructured population with
+#' temporally autocorrelated vital rates (survival and fertility). In other
+#' words, this function will show you the dynamics over time of a population
+#' whose survival and fertility is stochastic, but also correlated to the
+#' survival and fertility in the previous year, respectively. The assumptions of the
+#' simulation are that the population is asexually reproducing or female-only,
+#' survival and fertility are the same at all ages / stages,
+#' and that individuals continue to be reproductively capable until they die.
+#'
+#' Be advised that not all combinations of values will work. If you set survival and
+#' fertility unrealistically high, the population size will tend toward infinity and
+#' the simulation will fail because the numbers are too large to handle. Use your
+#' common sense as a demographer / population biologist.
+#' @import stats
+#' @param start The starting population size.
+#' @param timesteps The number of timesteps you want to simulate. Individuals
+#'   are added and killed off every timestep according to the survival and
+#'   fertility rates. In ecological applications, timesteps are usually years,
+#'   but theoretically they can be any length of time.
+#' @param survPhi The temporal autocorrelation of survival. 0 is white noise (uncorrelated),
+#'   positive values are red noise (directly correlated) and negative values are
+#'   blue noise (inversely correlated).
+#' @param fecundPhi The temporal autocorrelation of fecundity. As above.
+#' @param survMean The mean survival from timestep to timestep. Must be a value
+#'   between 0 (all individuals die) and 1 (all individuals live).
+#' @param survSd The standard deviation of the survival from timestep to
+#'   timestep. Must be a value between 0 and 1.
+#' @param fecundMean The mean fertility: mean offspring produced by each individual per timestep.
+#' @param fecundSd The standard deviation of the fertility.
+#' @return A data frame with four variables: timestep, population (total individuals
+#'   alive at the start of the timestep), newborns (new individuals
+#'   born this timestep), and survivors (individuals who survive this timestep).
+#' @examples
+#' series1 <- timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
+#' survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
+#' head(series1)
+#' @export
 timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
     .Call('_colorednoise_timeseries', PACKAGE = 'colorednoise', start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
-}
-
-timeseries_loop <- function(params) {
-    .Call('_colorednoise_timeseries_loop', PACKAGE = 'colorednoise', params)
 }
 

@@ -5,8 +5,8 @@
 \title{Simulate Temporally Autocorrelated Populations for Every Combination of
 Parameters}
 \usage{
-autocorr_sim(timesteps, start, phi, survMean, survSd, fecundMean, fecundSd,
-  replicates)
+autocorr_sim(timesteps, start, survPhi, fecundPhi, survMean, survSd, fecundMean,
+  fecundSd, replicates)
 }
 \arguments{
 \item{timesteps}{The number of timesteps you want to simulate. Individuals
@@ -15,9 +15,11 @@ fertility rates. Can be a scalar or a vector of values to loop over.}
 
 \item{start}{The starting population size. Can be a scalar or vector.}
 
-\item{phi}{The temporal autocorrelation. 0 is white noise (uncorrelated),
+\item{survPhi}{The temporal autocorrelation of survival. 0 is white noise (uncorrelated),
 positive values are red noise (directly correlated) and negative values are
 blue noise (inversely correlated). Can be a scalar or a vector.}
+
+\item{fecundPhi}{The temporal autocorrelation of fecundity. As above.}
 
 \item{survMean}{The mean survival from timestep to timestep. Must be a value
 between 0 (all individuals die) and 1 (all individuals live). Can be a scalar
@@ -26,11 +28,9 @@ or a vector.}
 \item{survSd}{The standard deviation of the survival from timestep to
 timestep. Must be a value between 0 and 1. Can be a scalar or a vector.}
 
-\item{fecundMean}{The mean fertility. Must be a number from 0 (no one
-reproduces) to 1 (everyone reproduces). Can be a scalar or a vector.}
+\item{fecundMean}{The mean fertility: mean offspring produced by each individual per timestep. Can be a scalar or a vector.}
 
-\item{fecundSd}{The standard deviation of the fertility. Must be a number
-from 0 to 1. Can be a scalar or a vector of values.}
+\item{fecundSd}{The standard deviation of the fertility. Can be a scalar or a vector of values.}
 
 \item{replicates}{How many replicates you would like of each possible
 combination of parameters.}
@@ -53,8 +53,8 @@ intensive if you provide many possible parameter values and/or ask for many
 replicates.
 }
 \examples{
-survival_range <- autocorr_sim(timesteps = 30, start = 200, phi = 0.3,
+survival_range <- autocorr_sim(timesteps = 30, start = 200, survPhi = 0.3, fecundPhi = 0.1,
                                survMean = c(0.2, 0.3, 0.4, 0.5, 0.6), survSd = 0.5,
-                               fecundMean = 0.6, fecundSd = 0.5, replicates = 50)
+                               fecundMean = 1.1, fecundSd = 0.5, replicates = 50)
 head(survival_range[[1]])
 }
