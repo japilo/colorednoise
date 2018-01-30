@@ -1,7 +1,7 @@
 #' Estimate Mean, SD, and Autocorrelation of Sample Noise.
 #'
 #' This function estimates the temporal autocorrelation of a vector of random
-#' numburs, as well as the sample mean and standard deviation. Try feeding it the output of \code{\link{raw_noise}}.
+#' numbers, as well as the sample mean and standard deviation. Try feeding it the output of \code{\link{raw_noise}}.
 #' @useDynLib colorednoise
 #' @importFrom Rcpp sourceCpp
 #' @param noise The vector of random numbers.
