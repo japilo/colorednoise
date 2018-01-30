@@ -4,8 +4,8 @@ context("Autocorrelation of timeseries output")
 
 test_that("timeseries can produce blue noise populations", {
   rerun(.n = 1000,
-        timeseries(start = 200, timesteps = 50, survPhi = -0.4, survMean = 0.6,
-        survSd = 0.3, fecundPhi = 0, fecundMean = 0.9, fecundSd = 0.7)) %>%
+        timeseries(start = 200, timesteps = 50, survPhi = -0.5, survMean = 0.4,
+        survSd = 0.05, fecundPhi = 0, fecundMean = 1.5, fecundSd = 0.2)) %>%
     map(~mutate(., est_surv = survivors/population,
                 est_fecund = newborns/survivors)) %>%
     map_dbl(~autocorrelation(.$est_surv)) -> test_blue
@@ -14,8 +14,8 @@ test_that("timeseries can produce blue noise populations", {
 
 test_that("timeseries can produce red noise populations", {
   rerun(.n = 1000,
-        timeseries(start = 200, timesteps = 50, survPhi = 0.4, survMean = 0.6,
-                   survSd = 0.3, fecundPhi = 0, fecundMean = 0.8, fecundSd = 0.5)) %>%
+        timeseries(start = 200, timesteps = 50, survPhi = 0.5, survMean = 0.4,
+                   survSd = 0.05, fecundPhi = 0, fecundMean = 1.5, fecundSd = 0.2)) %>%
     map(~mutate(., est_surv = survivors/population,
                 est_fecund = newborns/survivors)) %>%
     map_dbl(~autocorrelation(.$est_surv)) -> test_red

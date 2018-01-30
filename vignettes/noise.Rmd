@@ -97,7 +97,7 @@ ggplot(series1, aes(x=timestep, y=population)) + geom_line()
 Now let's try addressing the question of whether short time series bias our estimates of autocorrelation in red noise populations. We can do this by simulating populations along a range of time series lengths and noise color. Let's try a full range from blue noise to red noise in the survival vital rate, and a range of time series lengths from five years to a hundred years.
 
 ```{r simulate many populations}
-sims <- autocorr_sim(timesteps = seq(5, 60, 5), start = 200, survPhi = c(-0.5, -0.25, -0.2, -0.1, 0, 0.1, 0.2, 0.25, 0.5), fecundPhi = 0, survMean = 0.5, survSd = 0.1, fecundMean = 0.8, fecundSd = 0.1, replicates = 100)
+sims <- autocorr_sim(timesteps = seq(5, 60, 5), start = 200, survPhi = c(-0.5, -0.25, -0.2, -0.1, 0, 0.1, 0.2, 0.25, 0.5), fecundPhi = 0, survMean = 0.4, survSd = 0.05, fecundMean = 1.5, fecundSd = 0.2, replicates = 100)
 ggplot(sims[[6]], aes(x=timestep, y=population)) + geom_line()
 ```
 
