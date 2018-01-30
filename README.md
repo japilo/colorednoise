@@ -3,6 +3,11 @@
 colorednoise
 ============
 
+[![CRAN\_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise) [![Download\_count](http://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](http://cran.rstudio.com/web/packages/colorednoise/index.html)
+
+Overview
+--------
+
 Many populations that change over time are *temporally autocorrelated*, which means that the random noise in each timestep is correlated to that of the previous timestep. Instead of uncorrelated white noise, these populations are governed by blue noise (negatively autocorrelated) or red noise (positively autocorrelated.)
 
 The colorednoise package allows you to simulate colored noise as well as populations whose behavior is governed by colored noise.
