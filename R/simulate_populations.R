@@ -62,27 +62,45 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 }
 
 #' Temporally Autocorrelated Matrix Models
-
-matrix_model <- function(mean.mat, sd.mat, phi.mat, pop.init, timesteps){
-  mean.mat.trans <- matrix(c(log(mean.mat[1,]), qlogis(mean.mat[2:nrow(mean.mat),])), byrow=T, nrow = nrow(mean.mat))
-  sd.mat.trans <- matrix(c(map2_dbl(mean.mat[1,], sd.mat[1,], variancefix, "log"),
-                           map2_dbl(mean.mat[2:nrow(mean.mat),], sd.mat[2:nrow(sd.mat),], variancefix, "logis")),
-                         byrow=T, nrow = nrow(sd.mat))
+#'
+#' Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
+#' Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
+#' The matrix can have arbitrary dimensions and can have transitions besides linear survival.
+#'
+#' @param meanMat A standard Leslie matrix with mean values for each element.
+#' @param sdMat A standard Leslie matrix with standard deviations for each element.
+#' @param phiMat A standard Leslie matrix with a temporal autocorrelation value for each element.
+#' @param initialPop An initial population vector. The length must be the same as the number of classes in the matrices.
+#' @param timesteps The number of timesteps you would like to simulate the population.
+#' @return A data frame with a timestep column and a column for each class with population sizes at each timestep.
+#' @examples
+#' meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = T, ncol = 2)
+#' sdMat <- matrix(c(0.3, 0.35, 0.05, 0.1), byrow = T, ncol = 2)
+#' phiMat <- matrix(c(-0.2, -0.2, 0, 0), byrow = T, ncol = 2)
+#' initialPop <- c(100, 100)
+#' sim <- matrix_model(meanMat, sdMat, phiMat, initialPop, 50)
+#' head(sim)
+#' @export
+matrix_model <- function(meanMat, sdMat, phiMat, initialPop, timesteps){
+  meanMat.trans <- matrix(c(log(meanMat[1,]), qlogis(meanMat[2:nrow(meanMat),])), byrow=T, nrow = nrow(meanMat))
+  sdMat.trans <- matrix(c(map2_dbl(meanMat[1,], sdMat[1,], variancefix, "log"),
+                           map2_dbl(meanMat[2:nrow(meanMat),], sdMat[2:nrow(sdMat),], variancefix, "logis")),
+                         byrow=T, nrow = nrow(sdMat))
   noise.mat = list()
-  for (i in 1:length(phi.mat)) {
-    noise.mat[[i]] = raw_noise(timesteps, mu = mean.mat.trans[i], sigma = sd.mat.trans[i], phi = phi.mat[i])
+  for (i in 1:length(phiMat)) {
+    noise.mat[[i]] = raw_noise(timesteps, mu = meanMat.trans[i], sigma = sdMat.trans[i], phi = phiMat[i])
   }
-  fecundity.index <- seq(1, length(noise.mat), nrow(mean.mat))
+  fecundity.index <- seq(1, length(noise.mat), nrow(meanMat))
   fecundity <- noise.mat[fecundity.index] %>% map(exp)
   transitions <- noise.mat[-fecundity.index] %>% map(plogis)
   yearly.mat <- list()
   for(i in 1:timesteps) {
     yearly.mat[[i]] <- matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
-                                map_dbl(seq(1, length(transitions), nrow(mean.mat)-1), function(x) {transitions[[x]][i]})),
-                              byrow = T, nrow = nrow(mean.mat))
+                                map_dbl(seq(1, length(transitions), nrow(meanMat)-1), function(x) {transitions[[x]][i]})),
+                              byrow = T, nrow = nrow(meanMat))
   }
-  population <- list(matrix(pop.init, ncol = ncol(mean.mat)))
-  for (i in 1:(timesteps-1)){
+  population <- list(matrix(initialPop, ncol = ncol(meanMat)))
+  for (i in 1:(timesteps)){
     population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
   }
   population %>% map(as.data.frame) %>% bind_rows(.id = "timestep")
