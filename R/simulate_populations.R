@@ -60,3 +60,30 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
                   est_fecund = newborns/survivors))
     return(sims)
 }
+
+#' Temporally Autocorrelated Matrix Models
+
+matrix_model <- function(mean.mat, sd.mat, phi.mat, pop.init, timesteps){
+  mean.mat.trans <- matrix(c(log(mean.mat[1,]), qlogis(mean.mat[2:nrow(mean.mat),])), byrow=T, nrow = nrow(mean.mat))
+  sd.mat.trans <- matrix(c(map2_dbl(mean.mat[1,], sd.mat[1,], variancefix, "log"),
+                           map2_dbl(mean.mat[2:nrow(mean.mat),], sd.mat[2:nrow(sd.mat),], variancefix, "logis")),
+                         byrow=T, nrow = nrow(sd.mat))
+  noise.mat = list()
+  for (i in 1:length(phi.mat)) {
+    noise.mat[[i]] = raw_noise(timesteps, mu = mean.mat.trans[i], sigma = sd.mat.trans[i], phi = phi.mat[i])
+  }
+  fecundity.index <- seq(1, length(noise.mat), nrow(mean.mat))
+  fecundity <- noise.mat[fecundity.index] %>% map(exp)
+  transitions <- noise.mat[-fecundity.index] %>% map(plogis)
+  yearly.mat <- list()
+  for(i in 1:timesteps) {
+    yearly.mat[[i]] <- matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
+                                map_dbl(seq(1, length(transitions), nrow(mean.mat)-1), function(x) {transitions[[x]][i]})),
+                              byrow = T, nrow = nrow(mean.mat))
+  }
+  population <- list(matrix(pop.init, ncol = ncol(mean.mat)))
+  for (i in 1:(timesteps-1)){
+    population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
+  }
+  population %>% map(as.data.frame) %>% bind_rows(.id = "timestep")
+}
