@@ -85,19 +85,22 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' head(sim)
 #' @export
 matrix_model <- function(meanMat, sdMat, phiMat, initialPop, timesteps){
-  meanMat.trans <- matrix(c(log(meanMat[1,]), qlogis(meanMat[2:nrow(meanMat),])), byrow=T, nrow = nrow(meanMat))
-  sdMat.trans <- matrix(c(map2_dbl(meanMat[1,], sdMat[1,], variancefix, "log"),
-                           map2_dbl(meanMat[2:nrow(meanMat),], sdMat[2:nrow(sdMat),], variancefix, "logis")),
-                         byrow=T, nrow = nrow(sdMat))
+  meanMat.trans <- rbind(map_if(meanMat[1,], map_lgl(test, ~!identical(., 0)), log) %>% as_vector(),
+                         matrix(
+                           map_if(meanMat[2:nrow(meanMat),], map_lgl(test, ~!identical(., 0)), qlogis) %>% as_vector(),
+                           ncol = ncol(meanMat)))
+  sdMat.trans <- rbind(map2_dbl(meanMat[1,], sdMat[1,], variancefix, "log"),
+                       matrix(map2_dbl(meanMat[2:nrow(meanMat),], sdMat[2:nrow(sdMat),], variancefix, "logis"),
+                              ncol = ncol(sdMat)))
   noise.mat <- pmap(list(mu = meanMat.trans, sigma = sdMat.trans, phi = phiMat),
                     raw_noise, timesteps = timesteps)
   fecundity.index <- seq(1, length(noise.mat), nrow(meanMat))
   fecundity <- noise.mat[fecundity.index] %>% map(exp)
   transitions <- noise.mat[-fecundity.index] %>% map(plogis)
   yearly.mat <- map(1:timesteps, function(i) {
-    matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
-             map_dbl(seq(1, length(transitions), nrow(meanMat)-1), function(x) {transitions[[x]][i]})),
-           byrow = T, nrow = nrow(meanMat))
+    rbind(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
+          matrix(map_dbl(1:length(transitions), function(x) {transitions[[x]][i]}),
+                 ncol = ncol(sdMat)))
   })
   population <- list(matrix(initialPop, ncol = ncol(meanMat)))
   for (i in 1:(timesteps)){

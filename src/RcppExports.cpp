@@ -19,6 +19,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// variancefix
+double variancefix(double mu, double sigma, std::string dist);
+RcppExport SEXP _colorednoise_variancefix(SEXP muSEXP, SEXP sigmaSEXP, SEXP distSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
+    rcpp_result_gen = Rcpp::wrap(variancefix(mu, sigma, dist));
+    return rcpp_result_gen;
+END_RCPP
+}
 // timeseries
 DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd);
 RcppExport SEXP _colorednoise_timeseries(SEXP startSEXP, SEXP timestepsSEXP, SEXP survPhiSEXP, SEXP fecundPhiSEXP, SEXP survMeanSEXP, SEXP survSdSEXP, SEXP fecundMeanSEXP, SEXP fecundSdSEXP) {
@@ -40,6 +53,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_colorednoise_raw_noise", (DL_FUNC) &_colorednoise_raw_noise, 4},
+    {"_colorednoise_variancefix", (DL_FUNC) &_colorednoise_variancefix, 3},
     {"_colorednoise_timeseries", (DL_FUNC) &_colorednoise_timeseries, 8},
     {NULL, NULL, 0}
 };

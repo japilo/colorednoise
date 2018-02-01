@@ -22,6 +22,10 @@ raw_noise <- function(timesteps, mu, sigma, phi) {
     .Call('_colorednoise_raw_noise', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi)
 }
 
+variancefix <- function(mu, sigma, dist) {
+    .Call('_colorednoise_variancefix', PACKAGE = 'colorednoise', mu, sigma, dist)
+}
+
 #' Simulated Time Series of an Unstructured Temporally Autocorrelated Population
 #'
 #' This function simulates an unstructured population with
