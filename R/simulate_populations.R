@@ -65,7 +65,10 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #'
 #' Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
 #' Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
-#' The matrix can have arbitrary dimensions and can have transitions besides linear survival.
+#' The matrix can have arbitrary dimensions and can have transitions besides linear survival. This model
+#' includes environmental stochasticity with colored noise but not demographic stochasticity.
+#'
+#' @importFrom dplyr bind_rows
 #'
 #' @param meanMat A standard Leslie matrix with mean values for each element.
 #' @param sdMat A standard Leslie matrix with standard deviations for each element.
@@ -86,22 +89,20 @@ matrix_model <- function(meanMat, sdMat, phiMat, initialPop, timesteps){
   sdMat.trans <- matrix(c(map2_dbl(meanMat[1,], sdMat[1,], variancefix, "log"),
                            map2_dbl(meanMat[2:nrow(meanMat),], sdMat[2:nrow(sdMat),], variancefix, "logis")),
                          byrow=T, nrow = nrow(sdMat))
-  noise.mat = list()
-  for (i in 1:length(phiMat)) {
-    noise.mat[[i]] = raw_noise(timesteps, mu = meanMat.trans[i], sigma = sdMat.trans[i], phi = phiMat[i])
-  }
+  noise.mat <- pmap(list(mu = meanMat.trans, sigma = sdMat.trans, phi = phiMat),
+                    raw_noise, timesteps = timesteps)
   fecundity.index <- seq(1, length(noise.mat), nrow(meanMat))
   fecundity <- noise.mat[fecundity.index] %>% map(exp)
   transitions <- noise.mat[-fecundity.index] %>% map(plogis)
-  yearly.mat <- list()
-  for(i in 1:timesteps) {
-    yearly.mat[[i]] <- matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
-                                map_dbl(seq(1, length(transitions), nrow(meanMat)-1), function(x) {transitions[[x]][i]})),
-                              byrow = T, nrow = nrow(meanMat))
-  }
+  yearly.mat <- map(1:timesteps, function(i) {
+    matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
+             map_dbl(seq(1, length(transitions), nrow(meanMat)-1), function(x) {transitions[[x]][i]})),
+           byrow = T, nrow = nrow(meanMat))
+  })
   population <- list(matrix(initialPop, ncol = ncol(meanMat)))
   for (i in 1:(timesteps)){
     population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
   }
-  population %>% map(as.data.frame) %>% bind_rows(.id = "timestep")
+  population %>% map(as.data.frame) %>% bind_rows(.id = "timestep") %>%
+    set_names(c("timestep", paste0("stage", 1:ncol(meanMat))))
 }
