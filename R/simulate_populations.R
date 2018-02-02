@@ -87,6 +87,7 @@ matrix_model <- function(meanMat, sdMat, phiMat, initialPop, timesteps){
                            map2_dbl(meanMat[2:nrow(meanMat),], sdMat[2:nrow(sdMat),], variancefix, "logis")),
                          byrow=T, nrow = nrow(sdMat))
   noise.mat = list()
+  # Change this from for loop to map
   for (i in 1:length(phiMat)) {
     noise.mat[[i]] = raw_noise(timesteps, mu = meanMat.trans[i], sigma = sdMat.trans[i], phi = phiMat[i])
   }
@@ -94,12 +95,14 @@ matrix_model <- function(meanMat, sdMat, phiMat, initialPop, timesteps){
   fecundity <- noise.mat[fecundity.index] %>% map(exp)
   transitions <- noise.mat[-fecundity.index] %>% map(plogis)
   yearly.mat <- list()
+  # Change this from for loop to map
   for(i in 1:timesteps) {
     yearly.mat[[i]] <- matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
                                 map_dbl(seq(1, length(transitions), nrow(meanMat)-1), function(x) {transitions[[x]][i]})),
                               byrow = T, nrow = nrow(meanMat))
   }
   population <- list(matrix(initialPop, ncol = ncol(meanMat)))
+  # Convert this to purrr
   for (i in 1:(timesteps)){
     population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
   }
