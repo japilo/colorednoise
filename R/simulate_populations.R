@@ -67,44 +67,81 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
 #' The matrix can have arbitrary dimensions and can have transitions besides linear survival.
 #'
-#' @param meanMat A standard Leslie matrix with mean values for each element.
-#' @param sdMat A standard Leslie matrix with standard deviations for each element.
-#' @param phiMat A standard Leslie matrix with a temporal autocorrelation value for each element.
+#' @param data The input data can be one of two formats: a list of three matrices, or a data frame
+#' with three columns.
+#' If it is a list of three matrices, they must be standard Leslie matrices: the first
+#' a matrix of mean values for each matrix element, the second a matrix of standard deviations, and the third
+#' a matrix of temporal autocorrelations.
+#' If it is a data frame, there must be three columns, one for mean vital rates, one for standard deviations, and one labeled "autocorrelation."
+#' If the population has n stages, the first n rows of the data frame must be stage-specific fecundities from first to last stage,
+#' and the next n*(1-n) rows must be the transition probabilities, each row of the matrix from first to last transposed vertically.
 #' @param initialPop An initial population vector. The length must be the same as the number of classes in the matrices.
 #' @param timesteps The number of timesteps you would like to simulate the population.
+#' @param corrMatrix Optional: add a correlation matrix describing within-year correlations between vital rates. The vital rates must be
+#' in the same order as they are in the data frame format above: a Leslie matrix turned into a vector row-wise.
+#' @param colNames Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
+#' named "mean", "sd", and "autocorrelation", provide their names here in a character vector, e.g.,
+#' c(mean = "Mean", sd = "Standard Deviation", autocorrelation = "phi")
 #' @return A data frame with a timestep column and a column for each class with population sizes at each timestep.
 #' @examples
 #' meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = T, ncol = 2)
 #' sdMat <- matrix(c(0.3, 0.35, 0.05, 0.1), byrow = T, ncol = 2)
 #' phiMat <- matrix(c(-0.2, -0.2, 0, 0), byrow = T, ncol = 2)
 #' initialPop <- c(100, 100)
-#' sim <- matrix_model(meanMat, sdMat, phiMat, initialPop, 50)
+#' sim <- matrix_model(list(meanMat, sdMat, phiMat), initialPop, 50)
 #' head(sim)
 #' @export
-matrix_model <- function(meanMat, sdMat, phiMat, initialPop, timesteps){
-  meanMat.trans <- matrix(c(log(meanMat[1,]), qlogis(meanMat[2:nrow(meanMat),])), byrow=T, nrow = nrow(meanMat))
-  sdMat.trans <- matrix(c(map2_dbl(meanMat[1,], sdMat[1,], variancefix, "log"),
-                           map2_dbl(meanMat[2:nrow(meanMat),], sdMat[2:nrow(sdMat),], variancefix, "logis")),
-                         byrow=T, nrow = nrow(sdMat))
-  noise.mat = list()
-  # Change this from for loop to map
-  for (i in 1:length(phiMat)) {
-    noise.mat[[i]] = raw_noise(timesteps, mu = meanMat.trans[i], sigma = sdMat.trans[i], phi = phiMat[i])
+matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colNames = NULL){
+  stages <- length(initialPop)
+  if (is.list(data)==T) {
+    if (length(data) > 3) {stop("List data should only have 3 elements")}
+    if (all(data[[1]]>0)==F) {stop("Invalid values in mean matrix")}
+    if (all(data[[2]]>0)==F) {stop("Invalid values in SD matrix")}
+    dat <- tibble(
+      mean = as.vector(t(data[[1]])),
+      sd = as.vector(t(data[[2]])),
+      autocorrelation = as.vector(t(data[[3]]))
+    )
+  } else if (is.data.frame(data)==T) {
+    if(is.null(colNames)==F) {
+      data <- data[, colNames] %>% rename(!!! colNames)
+    }
+    if(all(names(data)==c("mean", "sd", "autocorrelation"))==F) {
+      stop("Please name data frame columns correctly")
+    }
+    if(stages^2!=nrow(data)) {
+      stop("Number of stages in initial population vector does not match number of rows in data. Do you have a row for every matrix element?")
+    }
+    if(all(data$mean>0)==F) {
+      stop("Invalid values in mean column")
+    }
+    if(all(data$sd>0)==F) {stop("Invalid values in SD column")}
+    dat <- data %>% as_tibble()
+  } else {stop("Invalid data type. Must be a list of three matrices or a data frame with three columns.")}
+  fecundity <- dat %>% .[1:stages,] %>%
+    mutate(mean.trans = if_else(mean==0, 0, log(mean)),
+           sd.trans = if_else(sd==0, 0, variancefix(mean, sd, "log")))
+  transitions <- dat %>% .[(stages+1):nrow(dat),] %>%
+    mutate(mean.trans = if_else(mean==0, 0, qlogis(mean)),
+           sd.trans = if_else(sd==0, 0, variancefix(mean, sd, "logis")))
+  if (is.null(corrMatrix)==T) {
+    fecundity %>% rbind(transitions) %>% rowwise() %>%
+      mutate(noise = list(raw_noise(timesteps, mean.trans, sd.trans, autocorrelation))) -> elements
+  } else {
+    # Add functionality so there can be a correlated noise list-column
+    stop("Correlated vital rate functionality coming soon. Try again without correlations")
   }
-  fecundity.index <- seq(1, length(noise.mat), nrow(meanMat))
-  fecundity <- noise.mat[fecundity.index] %>% map(exp)
-  transitions <- noise.mat[-fecundity.index] %>% map(plogis)
-  yearly.mat <- list()
-  # Change this from for loop to map
-  for(i in 1:timesteps) {
-    yearly.mat[[i]] <- matrix(c(map_dbl(1:length(fecundity), function(x) {fecundity[[x]][i]}),
-                                map_dbl(seq(1, length(transitions), nrow(meanMat)-1), function(x) {transitions[[x]][i]})),
-                              byrow = T, nrow = nrow(meanMat))
-  }
-  population <- list(matrix(initialPop, ncol = ncol(meanMat)))
-  # Convert this to purrr
+  fecundity <- elements %>% .$noise %>% .[1:stages] %>% map(exp)
+  transitions <- elements %>% .$noise %>% .[(stages+1):nrow(elements)] %>% map(plogis)
+  yearly.mat <- map(1:timesteps, function(i) {
+    rbind(map_dbl(1:stages, function(x) {fecundity[[x]][i]}),
+          matrix(map_dbl(1:length(transitions), function(x) {transitions[[x]][i]}),
+                 byrow=T, ncol = stages))
+  })
+  population <- list(matrix(initialPop, ncol = stages))
   for (i in 1:(timesteps)){
     population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
   }
-  population %>% map(as.data.frame) %>% bind_rows(.id = "timestep")
+  population %>% map(as.data.frame) %>% bind_rows(.id = "timestep") %>%
+    set_names(c("timestep", paste0("stage", 1:stages)))
 }
