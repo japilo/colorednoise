@@ -1,5 +1,8 @@
 #include <Rcpp.h>
+#include <RcppArmadillo.h>
+// [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
+using namespace arma;
 
 //' Generate Autocorrelated Noise
 //'
@@ -30,10 +33,34 @@ NumericVector raw_noise(int timesteps, double mu, double sigma, double phi) {
   return noise;
 }
 
-// You can include R code blocks in C++ files processed with sourceCpp
-// (useful for testing and development). The R code will be automatically
-// run after the compilation.
-//
+// Generate Correlated Normal Random Numbers
+// [[Rcpp::export]]
+arma::mat mvrnorm(int n, arma::vec mu, arma::mat sigma) {
+  int ncols = sigma.n_cols;
+  arma::mat Y = arma::randn(n, ncols);
+  return arma::repmat(mu, 1, n).t() + Y * arma::chol(sigma);
+}
+
+// Convert from Correlation Matrix to Covariance Matrix
+// [[Rcpp::export]]
+arma::mat cor2cov(arma::vec sigmas, arma::vec corrMatrix) {
+  arma::mat m1 = diagmat(sigmas);
+  return m1 * corrMatrix * m1;
+}
+
+// Generate Multiple Cross-Correlated & Autocorrelated Variables
+
+NumericMatrix colored_mvrnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericMatrix corrMatrix, NumericVector phi) {
+  NumericVector sigma2(sigma.length());
+  for (int i = 0; i < sigma.length(); ++i) {
+    sigma2[i] = sqrt(pow(sigma[i], 2.0) * (1 - pow(phi[i], 2.0)))
+  }
+  NumericMatrix cov = cor2cov(sigma2, corrMatrix)
+  NumericVector zeroes(mu.length());
+  NumericMatrix draws = mvrnorm(timesteps, zeroes, cov)
+}
+
+// Test code
 
 /*** R
 raw_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)

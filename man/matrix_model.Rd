@@ -4,18 +4,29 @@
 \alias{matrix_model}
 \title{Temporally Autocorrelated Matrix Models}
 \usage{
-matrix_model(meanMat, sdMat, phiMat, initialPop, timesteps)
+matrix_model(data, initialPop, timesteps, corrMatrix = NULL,
+  colNames = NULL)
 }
 \arguments{
-\item{meanMat}{A standard Leslie matrix with mean values for each element.}
-
-\item{sdMat}{A standard Leslie matrix with standard deviations for each element.}
-
-\item{phiMat}{A standard Leslie matrix with a temporal autocorrelation value for each element.}
+\item{data}{The input data can be one of two formats: a list of three matrices, or a data frame
+with three columns.
+If it is a list of three matrices, they must be standard Leslie matrices: the first
+a matrix of mean values for each matrix element, the second a matrix of standard deviations, and the third
+a matrix of temporal autocorrelations.
+If it is a data frame, there must be three columns, one for mean vital rates, one for standard deviations, and one labeled "autocorrelation."
+If the population has n stages, the first n rows of the data frame must be stage-specific fecundities from first to last stage,
+and the next n*(1-n) rows must be the transition probabilities, each row of the matrix from first to last transposed vertically.}
 
 \item{initialPop}{An initial population vector. The length must be the same as the number of classes in the matrices.}
 
 \item{timesteps}{The number of timesteps you would like to simulate the population.}
+
+\item{corrMatrix}{Optional: add a correlation matrix describing within-year correlations between vital rates. The vital rates must be
+in the same order as they are in the data frame format above: a Leslie matrix turned into a vector row-wise.}
+
+\item{colNames}{Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
+named "mean", "sd", and "autocorrelation", provide their names here in a character vector, e.g.,
+c(mean = "Mean", sd = "Standard Deviation", autocorrelation = "phi")}
 }
 \value{
 A data frame with a timestep column and a column for each class with population sizes at each timestep.
@@ -31,6 +42,6 @@ meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = T, ncol = 2)
 sdMat <- matrix(c(0.3, 0.35, 0.05, 0.1), byrow = T, ncol = 2)
 phiMat <- matrix(c(-0.2, -0.2, 0, 0), byrow = T, ncol = 2)
 initialPop <- c(100, 100)
-sim <- matrix_model(meanMat, sdMat, phiMat, initialPop, 50)
+sim <- matrix_model(list(meanMat, sdMat, phiMat), initialPop, 50)
 head(sim)
 }
