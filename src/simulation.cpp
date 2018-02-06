@@ -6,6 +6,7 @@ using namespace Rcpp;
 //
 // This function changes the variance so that once it is back-transformed
 // from the logit scale, the original variance is recovered.
+// [[Rcpp::export]]
 
 double variancefix(double mu, double sigma, std::string dist){
   if (dist == "logis") {
