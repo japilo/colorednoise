@@ -34,7 +34,6 @@ NumericVector raw_noise(int timesteps, double mu, double sigma, double phi) {
 }
 
 // Generate Correlated Normal Random Numbers
-// [[Rcpp::export]]
 arma::mat mvrnorm(int n, arma::vec mu, arma::mat sigma) {
   int ncols = sigma.n_cols;
   arma::mat Y = arma::randn(n, ncols);
@@ -42,22 +41,36 @@ arma::mat mvrnorm(int n, arma::vec mu, arma::mat sigma) {
 }
 
 // Convert from Correlation Matrix to Covariance Matrix
-// [[Rcpp::export]]
 arma::mat cor2cov(arma::vec sigmas, arma::vec corrMatrix) {
   arma::mat m1 = diagmat(sigmas);
   return m1 * corrMatrix * m1;
 }
 
 // Generate Multiple Cross-Correlated & Autocorrelated Variables
-
 NumericMatrix colored_mvrnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericMatrix corrMatrix, NumericVector phi) {
   NumericVector sigma2(sigma.length());
+  // NumericVector delta(mu.length());
+  // for (int i = 0; i < mu.length(); ++i) {
+    // delta[i] = mu[i] * (1 - phi[i]);
+  //}
   for (int i = 0; i < sigma.length(); ++i) {
-    sigma2[i] = sqrt(pow(sigma[i], 2.0) * (1 - pow(phi[i], 2.0)))
+    sigma2[i] = sqrt(pow(sigma[i], 2.0) * (1 - pow(phi[i], 2.0)));
   }
-  NumericMatrix cov = cor2cov(sigma2, corrMatrix)
+  NumericMatrix cov = cor2cov(sigma2, corrMatrix);
   NumericVector zeroes(mu.length());
-  NumericMatrix draws = mvrnorm(timesteps, zeroes, cov)
+  NumericMatrix draws = mvrnorm(timesteps, zeroes, cov);
+  return draws;
+  // After verifying output, add autocorrelation pulling from draws
+  // NumericMatrix noise(timesteps, sigma.length());
+  // for (int i = 0; i < sigma.length(); ++i) {
+  //   noise(0,i) = draws(0,i)
+  //}
+  // for (int i = 0; i < noise.ncols(); ++i) {
+  //   for (int j = 0; j < noise.nrows(); ++j) {
+  //     noise(j+1,i) = delta[i] + phi[i]*noise(j,i) + draws(j,i)
+  // }
+  //}
+  // return noise;
 }
 
 // Test code

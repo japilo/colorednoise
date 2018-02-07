@@ -65,7 +65,11 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #'
 #' Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
 #' Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
-#' The matrix can have arbitrary dimensions and can have transitions besides linear survival.
+#' The matrix can have arbitrary dimensions and can have transitions besides linear survival. This model
+#' includes environmental stochasticity with colored noise but not demographic stochasticity. Density
+#' dependence is not currently supported.
+#'
+#' @importFrom dplyr bind_rows
 #'
 #' @param data The input data can be one of two formats: a list of three matrices, or a data frame
 #' with three columns.
@@ -95,8 +99,8 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
   stages <- length(initialPop)
   if (is.list(data)==T) {
     if (length(data) > 3) {stop("List data should only have 3 elements")}
-    if (all(data[[1]]>0)==F) {stop("Invalid values in mean matrix")}
-    if (all(data[[2]]>0)==F) {stop("Invalid values in SD matrix")}
+    if (all(data[[1]]>=0)==F) {stop("Invalid values in mean matrix")}
+    if (all(data[[2]]>=0)==F) {stop("Invalid values in SD matrix")}
     dat <- tibble(
       mean = as.vector(t(data[[1]])),
       sd = as.vector(t(data[[2]])),
@@ -143,5 +147,6 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
     population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
   }
   population %>% map(as.data.frame) %>% bind_rows(.id = "timestep") %>%
-    set_names(c("timestep", paste0("stage", 1:stages)))
+    set_names(c("timestep", paste0("stage", 1:stages))) %>%
+    mutate_if(is.character, as.integer)
 }
