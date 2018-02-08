@@ -23,7 +23,7 @@ noise (inversely correlated).}
 A vector of temporally autocorrelated random numbers.
 }
 \description{
-This function generates temporally autocorrelated random numbers with a mean,
+Generates temporally autocorrelated random numbers with a mean,
 standard deviation, and autocorrelation you specify.
 }
 \examples{

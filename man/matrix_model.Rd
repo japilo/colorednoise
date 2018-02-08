@@ -34,9 +34,9 @@ A data frame with a timestep column and a column for each class with population 
 \description{
 Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
 Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
-
 The matrix can have arbitrary dimensions and can have transitions besides linear survival. This model
-includes environmental stochasticity with colored noise but not demographic stochasticity.
+includes environmental stochasticity with colored noise but not demographic stochasticity. Density
+dependence is not currently supported.
 }
 \examples{
 meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = T, ncol = 2)
