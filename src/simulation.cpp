@@ -99,10 +99,38 @@ DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi,
   return output;
 }
 
-// You can include R code blocks in C++ files processed with sourceCpp
-// (useful for testing and development). The R code will be automatically
-// run after the compilation.
-//
+// Demographic Stochasticity Loop Function
+
+// Feed in an initial population vector and a matrix of vital rates for each year
+// Get out a matrix with stage-specific population each year
+
+NumericMatrix demo_stochasticity(NumericVector initialPop, NumericMatrix rates) {
+  int timesteps = rates.nrow();
+  int stages = initialPop.length();
+  NumericMatrix population = NumericMatrix(timesteps, stages);
+  NumericMatrix elements = NumericMatrix(timesteps, rates.ncol());
+  population(0, _) = initialPop;
+  for(int i = 0; i < population.nrow(); ++i) {
+    for(int j = 0; j < population.ncol(); ++j) {
+      if (j = 0) {
+        for(int k = 0; k < stages; ++k) {
+          elements[i, k] = sum(Rcpp::rpois(population[i, k], rates[i, k]));
+        }
+        NumericVector offspring = elements[i, Range(0, stages-1)];
+        population[i, j] = sum(offspring);
+      } else {
+        for (int k = 0; k < stages; ++k) {
+          elements[i, j+k] = R::rbinom(population[i, k], rates[i, j*stages+k]);
+        }
+        NumericVector recruits = elements[i, Range(j*stages, j*stages+stages-1)];
+        population[i,j] = sum(recruits);
+      }
+    }
+  }
+  return population;
+}
+
+// Test code
 
 /*** R
 timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
