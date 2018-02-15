@@ -89,7 +89,7 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' var(test)
 //' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 // [[Rcpp::export]]
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericMatrix corrMatrix, NumericVector phi) {
+NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericVector phi, NumericMatrix corrMatrix) {
   // Convert mu and sigma to delta and modified SD
   NumericVector sigma2(sigma.length());
   NumericVector delta(mu.length());

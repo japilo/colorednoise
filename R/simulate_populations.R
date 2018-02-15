@@ -61,7 +61,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
     return(sims)
 }
 
-#' Temporally Autocorrelated Matrix Models
+#' Temporally Autocorrelated Matrix Population Models
 #'
 #' Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
 #' Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
@@ -79,6 +79,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' If it is a data frame, there must be three columns, one for mean vital rates, one for standard deviations, and one labeled "autocorrelation."
 #' If the population has n stages, the first n rows of the data frame must be stage-specific fecundities from first to last stage,
 #' and the next n*(1-n) rows must be the transition probabilities, each row of the matrix from first to last transposed vertically.
+#' If you want to run a matrix population model without temporal autocorrelation, simply set all autocorrelation values to zero.
 #' @param initialPop An initial population vector. The length must be the same as the number of classes in the matrices.
 #' @param timesteps The number of timesteps you would like to simulate the population.
 #' @param corrMatrix Optional: add a correlation matrix describing within-year correlations between vital rates. The vital rates must be
@@ -131,9 +132,11 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
   if (is.null(corrMatrix)==T) {
     fecundity %>% rbind(transitions) %>% rowwise() %>%
       mutate(noise = list(raw_noise(timesteps, mean.trans, sd.trans, autocorrelation))) -> elements
-  } else {
+  } else if(is.matrix(corrMatrix)==T) {
     # Add functionality so there can be a correlated noise list-column
     stop("Correlated vital rate functionality coming soon. Try again without correlations")
+  } else {
+    stop("Correlation matrix must be in matrix format")
   }
   fecundity <- elements %>% .$noise %>% .[1:stages] %>% map(exp)
   transitions <- elements %>% .$noise %>% .[(stages+1):nrow(elements)] %>% map(plogis)
