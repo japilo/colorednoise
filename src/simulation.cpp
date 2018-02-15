@@ -9,7 +9,10 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 double variancefix(double mu, double sigma, std::string dist){
-  if (dist == "logis") {
+  if (sigma == 0) {
+    return 0;
+  }
+  if (dist == "qlogis") {
   double mn = R::qlogis(mu, 0, 1, true, false);
   double out = (sigma*pow(exp(mn) + 1, 2.0))/exp(mn);
   return out;

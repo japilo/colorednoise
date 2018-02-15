@@ -77,7 +77,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' a matrix of mean values for each matrix element, the second a matrix of standard deviations, and the third
 #' a matrix of temporal autocorrelations.
 #' If it is a data frame, there must be three columns, one for mean vital rates, one for standard deviations, and one labeled "autocorrelation."
-#' If the population has n stages, the first n rows of the data frame must be stage-specific fecundities from first to last stage,
+#' If the population has n stages, the first n rows of the data frame must be the matrix elements for the first stage,
 #' and the next n*(1-n) rows must be the transition probabilities, each row of the matrix from first to last transposed vertically.
 #' @param initialPop An initial population vector. The length must be the same as the number of classes in the matrices.
 #' @param timesteps The number of timesteps you would like to simulate the population.
@@ -86,6 +86,10 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' @param colNames Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
 #' named "mean", "sd", and "autocorrelation", provide their names here in a character vector, e.g.,
 #' c(mean = "Mean", sd = "Standard Deviation", autocorrelation = "phi")
+#' @param firstElement Is the first element of the matrix the reproductive contribution of the first stage ("reproduction") or
+#' the stasis probability of the first stage ("stasis")? In age- and ontogeny-based matrices the first element is always the fertility
+#' of the first stage; the argument is set to "reproduction" by default. However in size-based plant matrices the first element is
+#' usually the stasis probability of the first size class, and you should then set the argument to "stasis".
 #' @return A data frame with a timestep column and a column for each class with population sizes at each timestep.
 #' @examples
 #' meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = T, ncol = 2)
@@ -95,7 +99,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' sim <- matrix_model(list(meanMat, sdMat, phiMat), initialPop, 50)
 #' head(sim)
 #' @export
-matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colNames = NULL){
+matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colNames = NULL, firstElement = "reproduction"){
   stages <- length(initialPop)
   if (is.list(data)==T) {
     if (length(data) > 3) {stop("List data should only have 3 elements")}
@@ -122,25 +126,24 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
     if(all(data$sd>0)==F) {stop("Invalid values in SD column")}
     dat <- data %>% as_tibble()
   } else {stop("Invalid data type. Must be a list of three matrices or a data frame with three columns.")}
-  fecundity <- dat %>% .[1:stages,] %>%
-    mutate(mean.trans = if_else(mean==0, 0, log(mean)),
-           sd.trans = if_else(sd==0, 0, variancefix(mean, sd, "log")))
-  transitions <- dat %>% .[(stages+1):nrow(dat),] %>%
-    mutate(mean.trans = if_else(mean==0, 0, qlogis(mean)),
-           sd.trans = if_else(sd==0, 0, variancefix(mean, sd, "logis")))
+  if (firstElement == "reproduction") {
+    dat %>% cbind(dist = c(rep("log", stages), rep("qlogis", nrow(dat)-stages))) %>%
+      mutate(dist = as.character(dist)) -> df
+  } else if (firstElement == "stasis") {
+    dat %>% cbind(dist = c("qlogis", rep("log", stages-1), rep("qlogis", nrow(dat)-stages))) %>%
+      mutate(dist = as.character(dist)) -> df
+  } else {stop("firstElement argument must be set to 'reproduction' or 'stasis'")}
   if (is.null(corrMatrix)==T) {
-    fecundity %>% rbind(transitions) %>% rowwise() %>%
-      mutate(noise = list(raw_noise(timesteps, mean.trans, sd.trans, autocorrelation))) -> elements
+    df %>% rowwise() %>% mutate(mean.trans = invoke(dist, list(mean)),
+                                sd.trans = variancefix(mean, sd, dist),
+                                noise = list(raw_noise(timesteps, mean.trans, sd.trans, autocorrelation)),
+                                natural.noise = ifelse(dist == "log", map(noise, exp), map(noise, plogis))) -> elements
   } else {
     # Add functionality so there can be a correlated noise list-column
     stop("Correlated vital rate functionality coming soon. Try again without correlations")
   }
-  fecundity <- elements %>% .$noise %>% .[1:stages] %>% map(exp)
-  transitions <- elements %>% .$noise %>% .[(stages+1):nrow(elements)] %>% map(plogis)
-  yearly.mat <- map(1:timesteps, function(i) {
-    rbind(map_dbl(1:stages, function(x) {fecundity[[x]][i]}),
-          matrix(map_dbl(1:length(transitions), function(x) {transitions[[x]][i]}),
-                 byrow=T, ncol = stages))
+  yearly.mat <- map(1:timesteps, function(x) {
+    matrix(map_dbl(elements$natural.noise, x), byrow = T, ncol = stages)
   })
   population <- list(matrix(initialPop, ncol = stages))
   for (i in 1:(timesteps)){
@@ -149,4 +152,5 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
   population %>% map(as.data.frame) %>% bind_rows(.id = "timestep") %>%
     set_names(c("timestep", paste0("stage", 1:stages))) %>%
     mutate_if(is.character, as.integer)
+  return(population)
 }
