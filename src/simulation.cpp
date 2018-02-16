@@ -1,6 +1,8 @@
+#include <RcppArmadillo.h>
 #include "noise.h"
-#include <Rcpp.h>
+// [[Rcpp::depends(RcppArmadillo)]]
 using namespace Rcpp;
+using namespace arma;
 
 // Variance Fix
 //
@@ -9,7 +11,10 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 
 double variancefix(double mu, double sigma, std::string dist){
-  if (dist == "logis") {
+  if (sigma == 0) {
+    return 0;
+  }
+  if (dist == "qlogis") {
   double mn = R::qlogis(mu, 0, 1, true, false);
   double out = (sigma*pow(exp(mn) + 1, 2.0))/exp(mn);
   return out;
@@ -65,7 +70,7 @@ double variancefix(double mu, double sigma, std::string dist){
 DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd) {
   // These lines generate the temporally autocorrelated random numbers
   double survmu = R::qlogis(survMean, 0, 1, true, false);
-  double survsigma = variancefix(survMean, survSd, "logis");
+  double survsigma = variancefix(survMean, survSd, "qlogis");
   NumericVector survnoise = raw_noise(timesteps, survmu, survsigma, survPhi);
   NumericVector St = plogis(survnoise);
   double fecundmu = log(fecundMean);
@@ -99,10 +104,38 @@ DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi,
   return output;
 }
 
-// You can include R code blocks in C++ files processed with sourceCpp
-// (useful for testing and development). The R code will be automatically
-// run after the compilation.
-//
+// Demographic Stochasticity Loop Function
+
+// Feed in an initial population vector and a matrix of vital rates for each year
+// Get out a matrix with stage-specific population each year
+// [[Rcpp::export]]
+NumericMatrix demo_stochasticity(NumericVector initialPop, NumericMatrix rates) {
+  int timesteps = rates.nrow();
+  int stages = initialPop.length();
+  NumericMatrix population = NumericMatrix(timesteps, stages);
+  NumericMatrix elements = NumericMatrix(timesteps, rates.ncol());
+  population(0, _) = initialPop;
+  for(int i = 0; i < population.nrow(); ++i) {
+    for(int j = 0; j < population.ncol(); ++j) {
+      if (j == 0) {
+        for(int k = 0; k < stages; ++k) {
+          elements(i, k) = sum(Rcpp::rpois(population(i, k), rates(i, k)));
+        }
+        NumericVector offspring = elements(i, _);
+        population(i, j) = sum(offspring[Range(0, stages-1)]);
+      } else {
+        for (int k = 0; k < stages; ++k) {
+          elements(i, j+k) = R::rbinom(population(i, k), rates(i, j*stages+k));
+        }
+        NumericVector recruits = elements(i, _);
+        population(i,j) = sum(recruits[Range(j*stages, j*stages+stages-1)]);
+      }
+    }
+  }
+  return population;
+}
+
+// Test code
 
 /*** R
 timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,

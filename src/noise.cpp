@@ -45,6 +45,7 @@ NumericVector raw_noise(int timesteps, double mu, double sigma, double phi) {
 //' sigmas <- matrix(c(1, 0.265, 2.19, 0.265, 0.25, 0.66, 2.19, 0.66, 9), ncol = 3)
 //' mat <- multi_rnorm(100, mus, sigmas)
 //' var(mat)
+//' @export
 // [[Rcpp::export]]
 arma::mat multi_rnorm(int n, NumericVector mu, NumericMatrix sigma) {
   arma::vec mu2 = as<arma::vec>(mu);
@@ -65,6 +66,7 @@ arma::mat multi_rnorm(int n, NumericVector mu, NumericMatrix sigma) {
 //' sigmas <- c(2, 0.3, 1.2)
 //' covar <- cor2cov(sigmas, corr)
 //' cov2cor(covar)
+//' @export
 // [[Rcpp::export]]
 arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
   arma::vec sigmas2 = as<arma::vec>(sigma);
@@ -88,6 +90,7 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), corr, c(0.5, -0.3, 0))
 //' var(test)
 //' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
+//' @export
 // [[Rcpp::export]]
 NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericVector phi, NumericMatrix corrMatrix) {
   // Convert mu and sigma to delta and modified SD

@@ -46,17 +46,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // colored_multi_rnorm
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericMatrix corrMatrix, NumericVector phi);
-RcppExport SEXP _colorednoise_colored_multi_rnorm(SEXP timestepsSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP corrMatrixSEXP, SEXP phiSEXP) {
+NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericVector phi, NumericMatrix corrMatrix);
+RcppExport SEXP _colorednoise_colored_multi_rnorm(SEXP timestepsSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP phiSEXP, SEXP corrMatrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type timesteps(timestepsSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type corrMatrix(corrMatrixSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type phi(phiSEXP);
-    rcpp_result_gen = Rcpp::wrap(colored_multi_rnorm(timesteps, mu, sigma, corrMatrix, phi));
+    Rcpp::traits::input_parameter< NumericMatrix >::type corrMatrix(corrMatrixSEXP);
+    rcpp_result_gen = Rcpp::wrap(colored_multi_rnorm(timesteps, mu, sigma, phi, corrMatrix));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -91,6 +91,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// demo_stochasticity
+NumericMatrix demo_stochasticity(NumericVector initialPop, NumericMatrix rates);
+RcppExport SEXP _colorednoise_demo_stochasticity(SEXP initialPopSEXP, SEXP ratesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type initialPop(initialPopSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type rates(ratesSEXP);
+    rcpp_result_gen = Rcpp::wrap(demo_stochasticity(initialPop, rates));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_colorednoise_raw_noise", (DL_FUNC) &_colorednoise_raw_noise, 4},
@@ -99,6 +111,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_colorednoise_colored_multi_rnorm", (DL_FUNC) &_colorednoise_colored_multi_rnorm, 5},
     {"_colorednoise_variancefix", (DL_FUNC) &_colorednoise_variancefix, 3},
     {"_colorednoise_timeseries", (DL_FUNC) &_colorednoise_timeseries, 8},
+    {"_colorednoise_demo_stochasticity", (DL_FUNC) &_colorednoise_demo_stochasticity, 2},
     {NULL, NULL, 0}
 };
 

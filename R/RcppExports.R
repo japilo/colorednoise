@@ -35,6 +35,7 @@ raw_noise <- function(timesteps, mu, sigma, phi) {
 #' sigmas <- matrix(c(1, 0.265, 2.19, 0.265, 0.25, 0.66, 2.19, 0.66, 9), ncol = 3)
 #' mat <- multi_rnorm(100, mus, sigmas)
 #' var(mat)
+#' @export
 multi_rnorm <- function(n, mu, sigma) {
     .Call('_colorednoise_multi_rnorm', PACKAGE = 'colorednoise', n, mu, sigma)
 }
@@ -50,6 +51,7 @@ multi_rnorm <- function(n, mu, sigma) {
 #' sigmas <- c(2, 0.3, 1.2)
 #' covar <- cor2cov(sigmas, corr)
 #' cov2cor(covar)
+#' @export
 cor2cov <- function(sigma, corrMatrix) {
     .Call('_colorednoise_cor2cov', PACKAGE = 'colorednoise', sigma, corrMatrix)
 }
@@ -69,8 +71,9 @@ cor2cov <- function(sigma, corrMatrix) {
 #' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), corr, c(0.5, -0.3, 0))
 #' var(test)
 #' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
-colored_multi_rnorm <- function(timesteps, mu, sigma, corrMatrix, phi) {
-    .Call('_colorednoise_colored_multi_rnorm', PACKAGE = 'colorednoise', timesteps, mu, sigma, corrMatrix, phi)
+#' @export
+colored_multi_rnorm <- function(timesteps, mu, sigma, phi, corrMatrix) {
+    .Call('_colorednoise_colored_multi_rnorm', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi, corrMatrix)
 }
 
 variancefix <- function(mu, sigma, dist) {
@@ -118,5 +121,9 @@ variancefix <- function(mu, sigma, dist) {
 #' @export
 timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
     .Call('_colorednoise_timeseries', PACKAGE = 'colorednoise', start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
+}
+
+demo_stochasticity <- function(initialPop, rates) {
+    .Call('_colorednoise_demo_stochasticity', PACKAGE = 'colorednoise', initialPop, rates)
 }
 

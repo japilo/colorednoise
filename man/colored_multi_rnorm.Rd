@@ -4,7 +4,7 @@
 \alias{colored_multi_rnorm}
 \title{Generate Multiple Cross-Correlated & Autocorrelated Variables}
 \usage{
-colored_multi_rnorm(timesteps, mu, sigma, corrMatrix, phi)
+colored_multi_rnorm(timesteps, mu, sigma, phi, corrMatrix)
 }
 \arguments{
 \item{timesteps}{The number of temporally autocorrelated random numbers (one
@@ -14,9 +14,9 @@ per timestep) you want.}
 
 \item{sigma}{A vector giving the standard deviation of each variable.}
 
-\item{corrMatrix}{A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.}
-
 \item{phi}{A vector giving the temporal autocorrelation of each variable.}
+
+\item{corrMatrix}{A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.}
 }
 \value{
 A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
