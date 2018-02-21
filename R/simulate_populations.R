@@ -135,10 +135,10 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
       mutate(dist = as.character(dist)) -> df
   } else {stop("firstElement argument must be set to 'reproduction' or 'stasis'")}
   if (is.null(corrMatrix)==T) {
-    df %>% rowwise() %>% mutate(mean.trans = invoke(dist, list(mean)),
-                                sd.trans = variancefix(mean, sd, dist),
+    df %>% rowwise() %>% mutate(mean.trans = ifelse(mean==0, 0, invoke(dist, list(mean))),
+                                sd.trans = ifelse(sd==0, 0, variancefix(mean, sd, dist)),
                                 noise = list(raw_noise(timesteps, mean.trans, sd.trans, autocorrelation)),
-                                natural.noise = ifelse(dist == "log", list(exp(noise)), list(plogis(noise)))) -> elements
+                                natural.noise = ifelse(all(noise==0)==T, list(noise), ifelse(dist == "log", list(exp(noise)), list(plogis(noise))))) -> elements
   } else if(is.matrix(corrMatrix)==T) {
     df %>% rowwise() %>% mutate(mean.trans = invoke(dist, list(mean)),
                                 sd.trans = variancefix(mean, sd, dist)) -> elements
@@ -148,13 +148,7 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
   } else {
     stop("Correlation matrix must be in matrix format")
   }
-  yearly.mat <- map(1:timesteps, function(x) {
-    matrix(map_dbl(elements$natural.noise, x), byrow = T, ncol = stages)
-  })
-  population <- list(matrix(initialPop, ncol = stages))
-  for (i in 1:(timesteps)){
-    population[[i + 1]] <- population[[i]] %*% yearly.mat[[i]]
-  }
+  population <- projection(initialPop, elements$natural.noise)
   population %>% map(as.data.frame) %>% bind_rows(.id = "timestep") %>%
     set_names(c("timestep", paste0("stage", 1:stages))) %>%
     mutate_if(is.character, as.integer)

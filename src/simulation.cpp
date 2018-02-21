@@ -108,22 +108,33 @@ DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi,
 
 // Feed in an initial population vector and a list of values for each matrix vital rate
 // in each timestep. Get out a list of matrices with the population for each timestep
-
+// [[Rcpp::export]]
 Rcpp::List projection(arma::vec initialPop, List noise) {
-  List vectors(vectors.length());
+  List vectors(noise.length());
   for (int i = 0; i < noise.length(); ++i) {
     vectors[i] = as<vec>(noise[i]);
   }
-  int timesteps = vectors[1].length();
-  List matrices;
+  vec sample = vectors[1];
+  int timesteps = sample.size();
+  List matrices(timesteps);
   for (int i = 0; i < timesteps; ++i) {
     arma::vec timestep(vectors.length());
     for (int j = 0; j < vectors.length(); ++j) {
-      timestep[j] = vectors[j][i];
+      vec v = vectors[j];
+      timestep(j) = v[i];
     }
-    matrices[i] = timestep.resize(initialPop.length(), initialPop.length());
+    mat projection = mat(timestep);
+    projection.reshape(initialPop.size(), initialPop.size());
+    matrices[i] = projection.t();
   }
-  return matrices;
+  List population(timesteps);
+  population[0] = initialPop;
+  for (int i = 0; i < timesteps-1; ++i) {
+    rowvec pop = population[i];
+    mat proj = matrices[i];
+    population[i + 1] = pop*proj;
+  }
+  return population;
 }
 
 // Matrix Projection Function with Demographic Stochasticity
