@@ -6,9 +6,9 @@
 
 using namespace Rcpp;
 
-// raw_noise
-NumericVector raw_noise(int timesteps, double mu, double sigma, double phi);
-RcppExport SEXP _colorednoise_raw_noise(SEXP timestepsSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP phiSEXP) {
+// colored_noise
+NumericVector colored_noise(int timesteps, double mu, double sigma, double phi);
+RcppExport SEXP _colorednoise_colored_noise(SEXP timestepsSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP phiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,7 +16,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type mu(muSEXP);
     Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< double >::type phi(phiSEXP);
-    rcpp_result_gen = Rcpp::wrap(raw_noise(timesteps, mu, sigma, phi));
+    rcpp_result_gen = Rcpp::wrap(colored_noise(timesteps, mu, sigma, phi));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -73,9 +73,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// timeseries
-DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd);
-RcppExport SEXP _colorednoise_timeseries(SEXP startSEXP, SEXP timestepsSEXP, SEXP survPhiSEXP, SEXP fecundPhiSEXP, SEXP survMeanSEXP, SEXP survSdSEXP, SEXP fecundMeanSEXP, SEXP fecundSdSEXP) {
+// unstructured_pop
+DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd);
+RcppExport SEXP _colorednoise_unstructured_pop(SEXP startSEXP, SEXP timestepsSEXP, SEXP survPhiSEXP, SEXP fecundPhiSEXP, SEXP survMeanSEXP, SEXP survSdSEXP, SEXP fecundMeanSEXP, SEXP fecundSdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -87,7 +87,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type survSd(survSdSEXP);
     Rcpp::traits::input_parameter< double >::type fecundMean(fecundMeanSEXP);
     Rcpp::traits::input_parameter< double >::type fecundSd(fecundSdSEXP);
-    rcpp_result_gen = Rcpp::wrap(timeseries(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd));
+    rcpp_result_gen = Rcpp::wrap(unstructured_pop(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd));
+    return rcpp_result_gen;
+END_RCPP
+}
+// projection
+Rcpp::List projection(arma::vec initialPop, List noise);
+RcppExport SEXP _colorednoise_projection(SEXP initialPopSEXP, SEXP noiseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type initialPop(initialPopSEXP);
+    Rcpp::traits::input_parameter< List >::type noise(noiseSEXP);
+    rcpp_result_gen = Rcpp::wrap(projection(initialPop, noise));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -105,12 +117,13 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_colorednoise_raw_noise", (DL_FUNC) &_colorednoise_raw_noise, 4},
+    {"_colorednoise_colored_noise", (DL_FUNC) &_colorednoise_colored_noise, 4},
     {"_colorednoise_multi_rnorm", (DL_FUNC) &_colorednoise_multi_rnorm, 3},
     {"_colorednoise_cor2cov", (DL_FUNC) &_colorednoise_cor2cov, 2},
     {"_colorednoise_colored_multi_rnorm", (DL_FUNC) &_colorednoise_colored_multi_rnorm, 5},
     {"_colorednoise_variancefix", (DL_FUNC) &_colorednoise_variancefix, 3},
-    {"_colorednoise_timeseries", (DL_FUNC) &_colorednoise_timeseries, 8},
+    {"_colorednoise_unstructured_pop", (DL_FUNC) &_colorednoise_unstructured_pop, 8},
+    {"_colorednoise_projection", (DL_FUNC) &_colorednoise_projection, 2},
     {"_colorednoise_demo_stochasticity", (DL_FUNC) &_colorednoise_demo_stochasticity, 2},
     {NULL, NULL, 0}
 };

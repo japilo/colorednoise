@@ -44,7 +44,7 @@ A list of data frames, each with fourteen variables: timestep,
   timestep, and the seven parameters used to generate the simulation.
 }
 \description{
-Essentially a loop of \code{\link{timeseries}}, this function simulates a
+Essentially a loop of \code{\link{unstructured_pop}}, this function simulates a
 population with temporally autocorrelated vital rates for every combination
 of parameters you specify, with as many replicates as desired. It also
 estimates the sample mean survival and fertility for each simulated
