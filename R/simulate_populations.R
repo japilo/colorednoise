@@ -1,7 +1,7 @@
 #' Simulate Temporally Autocorrelated Populations for Every Combination of
 #' Parameters
 #'
-#' Essentially a loop of \code{\link{timeseries}}, this function simulates a
+#' Essentially a loop of \code{\link{unstructured_pop}}, this function simulates a
 #' population with temporally autocorrelated vital rates for every combination
 #' of parameters you specify, with as many replicates as desired. It also
 #' estimates the sample mean survival and fertility for each simulated
@@ -45,7 +45,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
     # Simulates a population for each combination of parameters -----------
     raw_sims <- cross_df(list(start = start, timesteps = timesteps, survPhi = survPhi, fecundPhi = fecundPhi, survMean = survMean,
         survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd)) %>% rerun(.n = replicates,
-        pmap(., timeseries))
+        pmap(., unstructured_pop))
     # Labels each simulation with the parameters that generated it ------
     labeled_sims <- vector(mode = "list", replicates)
     for (i in 1:length(raw_sims)) {

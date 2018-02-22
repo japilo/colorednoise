@@ -15,11 +15,11 @@
 #'   noise (inversely correlated).
 #' @return A vector of temporally autocorrelated random numbers.
 #' @examples
-#' rednoise <- raw_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+#' rednoise <- colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
 #' rednoise
 #' @export
-raw_noise <- function(timesteps, mu, sigma, phi) {
-    .Call('_colorednoise_raw_noise', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi)
+colored_noise <- function(timesteps, mu, sigma, phi) {
+    .Call('_colorednoise_colored_noise', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi)
 }
 
 #' Generate Correlated Normal Random Numbers
@@ -115,12 +115,16 @@ variancefix <- function(mu, sigma, dist) {
 #'   alive at the start of the timestep), newborns (new individuals
 #'   born this timestep), and survivors (individuals who survive this timestep).
 #' @examples
-#' series1 <- timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
+#' series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
 #' survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
 #' head(series1)
 #' @export
-timeseries <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
-    .Call('_colorednoise_timeseries', PACKAGE = 'colorednoise', start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
+unstructured_pop <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
+    .Call('_colorednoise_unstructured_pop', PACKAGE = 'colorednoise', start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
+}
+
+projection <- function(initialPop, noise) {
+    .Call('_colorednoise_projection', PACKAGE = 'colorednoise', initialPop, noise)
 }
 
 demo_stochasticity <- function(initialPop, rates) {

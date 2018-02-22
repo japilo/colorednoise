@@ -17,11 +17,11 @@ using namespace arma;
 //'   noise (inversely correlated).
 //' @return A vector of temporally autocorrelated random numbers.
 //' @examples
-//' rednoise <- raw_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+//' rednoise <- colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
 //' rednoise
 //' @export
 // [[Rcpp::export]]
-NumericVector raw_noise(int timesteps, double mu, double sigma, double phi) {
+NumericVector colored_noise(int timesteps, double mu, double sigma, double phi) {
   double delta = mu * (1 - phi);
   double variance = pow(sigma, 2.0) * (1 - pow(phi, 2.0));
   NumericVector noise(timesteps);
@@ -125,5 +125,5 @@ NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector
 // Test code
 
 /*** R
-raw_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
 */

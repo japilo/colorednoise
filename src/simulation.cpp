@@ -62,20 +62,20 @@ double variancefix(double mu, double sigma, std::string dist){
 //'   alive at the start of the timestep), newborns (new individuals
 //'   born this timestep), and survivors (individuals who survive this timestep).
 //' @examples
-//' series1 <- timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
+//' series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
 //' survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
 //' head(series1)
 //' @export
 // [[Rcpp::export]]
-DataFrame timeseries(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd) {
+DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd) {
   // These lines generate the temporally autocorrelated random numbers
   double survmu = R::qlogis(survMean, 0, 1, true, false);
   double survsigma = variancefix(survMean, survSd, "qlogis");
-  NumericVector survnoise = raw_noise(timesteps, survmu, survsigma, survPhi);
+  NumericVector survnoise = colored_noise(timesteps, survmu, survsigma, survPhi);
   NumericVector St = plogis(survnoise);
   double fecundmu = log(fecundMean);
   double fecundsigma = variancefix(fecundMean, fecundSd, "log");
-  NumericVector fecundnoise = raw_noise(timesteps, fecundmu, fecundsigma, fecundPhi);
+  NumericVector fecundnoise = colored_noise(timesteps, fecundmu, fecundsigma, fecundPhi);
   NumericVector Ft = exp(fecundnoise);
   // This loop kills some individuals according to St probabilities, creates
   // new ones according to Ft counts, calculates population size and growth,
@@ -171,6 +171,6 @@ NumericMatrix demo_stochasticity(NumericVector initialPop, NumericMatrix rates) 
 // Test code
 
 /*** R
-timeseries(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
+unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
            survSd = 0.2, fecundMean = 1.2, fecundSd = 0.7)
 */
