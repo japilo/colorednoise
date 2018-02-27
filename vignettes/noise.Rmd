@@ -115,7 +115,7 @@ sims %>% map(~group_by(., survPhi, timesteps)) %>% map(~summarize(., acf.surv = 
 
 I find that this format of ggplot displays the estimates by noise color very nicely.
 
-```{r plotting estimates}
+```{r plotting estimates, fig.height=5, fig.width=8}
 estimates %>% group_by(survPhi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[1]]})(.)),
            upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[2]]})(.)),
            mean = mean(., na.rm = T)), .vars = vars(acf.surv)) -> summ2

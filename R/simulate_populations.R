@@ -66,20 +66,20 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
 #' Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
 #' The matrix can have arbitrary dimensions and can have transitions besides linear survival. This model
-#' includes environmental stochasticity with colored noise but not demographic stochasticity. Density
+#' includes environmental stochasticity with colored noise as well as demographic stochasticity. Density
 #' dependence is not currently supported.
 #'
 #' @importFrom dplyr bind_rows
 #'
 #' @param data The input data can be one of two formats: a list of three matrices, or a data frame
 #' with three columns.
-#' If it is a list of three matrices, they must be standard Leslie matrices: the first
+#' \n If it is a list of three matrices, they must be standard Leslie matrices: the first
 #' a matrix of mean values for each matrix element, the second a matrix of standard deviations, and the third
 #' a matrix of temporal autocorrelations.
-#' If it is a data frame, there must be three columns, one for mean vital rates, one for standard deviations, and one labeled "autocorrelation."
-#' If the population has n stages, the first n rows of the data frame must be the matrix elements for the first stage,
+#' \n If it is a data frame, there must be three columns, one for mean vital rates, one for standard deviations, and one labeled "autocorrelation."
+#' \n If the population has n stages, the first n rows of the data frame must be the matrix elements for the first stage,
 #' and the next n*(1-n) rows must be the transition probabilities, each row of the matrix from first to last transposed vertically.
-#' If you want to run a matrix population model without temporal autocorrelation, simply set all autocorrelation values to zero.
+#' \n If you want to run a matrix population model without temporal autocorrelation, simply set all autocorrelation values to zero.
 #' @param initialPop An initial population vector. The length must be the same as the number of classes in the matrices.
 #' @param timesteps The number of timesteps you would like to simulate the population.
 #' @param corrMatrix Optional: add a correlation matrix describing within-year correlations between vital rates. The vital rates must be
@@ -87,11 +87,15 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' @param colNames Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
 #' named "mean", "sd", and "autocorrelation", provide their names here in a character vector, e.g.,
 #' c(mean = "Mean", sd = "Standard Deviation", autocorrelation = "phi")
-#' @param firstElement Is the first element of the matrix the reproductive contribution of the first stage ("reproduction") or
-#' the stasis probability of the first stage ("stasis")? In age- and ontogeny-based matrices the first element is always the fertility
-#' of the first stage; the argument is set to "reproduction" by default. However in size-based plant matrices the first element is
-#' usually the stasis probability of the first size class, and you should then set the argument to "stasis".
-#' @return A data frame with a timestep column and a column for each class with population sizes at each timestep.
+#' @param matrixStructure By default, the function assumes that the first row of the matrix gives fecundities while
+#' the rest of the matrix gives transition or survival probabilities. However, these assumptions do not apply to
+#' many plant matrices. If your matrix has transition probabilities in the first row or fecundities beyond the first row
+#' (e.g., clonal reproduction), provide a character matrix here with the same dimensions as your matrix that gives in
+#' strings whether each element is "fecundity" or "transition".
+#' @param demoStochasticity By default, the matrix model is run with demographic stochasticity - that is, the given
+#' vital rates are used as rates for probability distributions of survival and fertility. If you would prefer a
+#' stochastic projection with only environmental stochasticity, that is, that simply matrix-multiplies the population
+#' vector by a stochastic matrix of vital rates, then set this argument to FALSE.
 #' @examples
 #' meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = T, ncol = 2)
 #' sdMat <- matrix(c(0.3, 0.35, 0.05, 0.1), byrow = T, ncol = 2)
@@ -100,7 +104,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, survSd,
 #' sim <- matrix_model(list(meanMat, sdMat, phiMat), initialPop, 50)
 #' head(sim)
 #' @export
-matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colNames = NULL, firstElement = "reproduction"){
+matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colNames = NULL, matrixStructure = NULL, demoStochasticity = TRUE){
   stages <- length(initialPop)
   if (is.data.frame(data)==T) {
     if(is.null(colNames)==F) {
@@ -127,17 +131,18 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
       autocorrelation = as.vector(t(data[[3]]))
     )
   } else {stop("Invalid data type. Must be a list of three matrices or a data frame with three columns.")}
-  if (firstElement == "reproduction") {
+  if (is.null(matrixStructure)==T) {
     dat %>% cbind(dist = c(rep("log", stages), rep("qlogis", nrow(dat)-stages))) %>%
       mutate(dist = as.character(dist)) -> df
-  } else if (firstElement == "stasis") {
-    dat %>% cbind(dist = c("qlogis", rep("log", stages-1), rep("qlogis", nrow(dat)-stages))) %>%
-      mutate(dist = as.character(dist)) -> df
-  } else {stop("firstElement argument must be set to 'reproduction' or 'stasis'")}
+  } else if (all(dim(matrixStructure)==c(stages, stages))==T) {
+    stopifnot(matrixStructure==c("fecundity", "transition"))
+    dists <- ifelse(as.vector(t(matrixStructure))=="fecundity", "log", "qlogis")
+    dat %>% cbind(dist = dists) %>% mutate(dist = as.character(dist)) -> df
+  } else {stop("Either your initial population vector has an invalid length or your matrixStructure is invalid")}
   if (is.null(corrMatrix)==T) {
     df %>% rowwise() %>% mutate(mean.trans = ifelse(mean==0, 0, invoke(dist, list(mean))),
                                 sd.trans = ifelse(sd==0, 0, variancefix(mean, sd, dist)),
-                                noise = list(raw_noise(timesteps, mean.trans, sd.trans, autocorrelation)),
+                                noise = list(colored_noise(timesteps, mean.trans, sd.trans, autocorrelation)),
                                 natural.noise = ifelse(all(noise==0)==T, list(noise), ifelse(dist == "log", list(exp(noise)), list(plogis(noise))))) -> elements
   } else if(is.matrix(corrMatrix)==T) {
     df %>% rowwise() %>% mutate(mean.trans = invoke(dist, list(mean)),
@@ -148,7 +153,11 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, colName
   } else {
     stop("Correlation matrix must be in matrix format")
   }
-  population <- projection(initialPop, elements$natural.noise)
+  if (demoStochasticity == T) {
+    population <- demo_stochasticity(initialPop, elements$natural.noise)
+  } else if (demoStochasticity == F) {
+    population <- projection(initialPop, elements$natural.noise)
+  }
   population %>% map(as.data.frame) %>% bind_rows(.id = "timestep") %>%
     set_names(c("timestep", paste0("stage", 1:stages))) %>%
     mutate_if(is.character, as.integer)

@@ -134,6 +134,7 @@ Rcpp::List projection(arma::vec initialPop, List noise) {
     mat proj = matrices[i];
     population[i + 1] = pop*proj;
   }
+  population[0] = initialPop.t();
   return population;
 }
 
@@ -142,26 +143,32 @@ Rcpp::List projection(arma::vec initialPop, List noise) {
 // Feed in an initial population vector and a matrix of vital rates for each year
 // Get out a matrix with stage-specific population each year
 // [[Rcpp::export]]
-NumericMatrix demo_stochasticity(NumericVector initialPop, NumericMatrix rates) {
-  int timesteps = rates.nrow();
+NumericMatrix demo_stochasticity(NumericVector initialPop, List noise) {
+  NumericVector sample = noise[1];
+  int timesteps = sample.length();
   int stages = initialPop.length();
+  NumericMatrix rates(timesteps, stages*stages);
+  for (int i = 0; i < noise.length(); ++i) {
+    NumericVector newcol = noise[i];
+    rates(_, i) = newcol;
+  }
   NumericMatrix population = NumericMatrix(timesteps, stages);
   NumericMatrix elements = NumericMatrix(timesteps, rates.ncol());
   population(0, _) = initialPop;
-  for(int i = 0; i < population.nrow(); ++i) {
+  for(int i = 0; i < population.nrow()-1; ++i) {
     for(int j = 0; j < population.ncol(); ++j) {
       if (j == 0) {
         for(int k = 0; k < stages; ++k) {
           elements(i, k) = sum(Rcpp::rpois(population(i, k), rates(i, k)));
         }
         NumericVector offspring = elements(i, _);
-        population(i, j) = sum(offspring[Range(0, stages-1)]);
+        population(i+1, j) = sum(offspring[Range(0, stages-1)]);
       } else {
         for (int k = 0; k < stages; ++k) {
-          elements(i, j+k) = R::rbinom(population(i, k), rates(i, j*stages+k));
+          elements(i, j+1+k) = R::rbinom(population(i, k), rates(i, stages+k));
         }
         NumericVector recruits = elements(i, _);
-        population(i,j) = sum(recruits[Range(j*stages, j*stages+stages-1)]);
+        population(i+1,j) = sum(recruits[Range(stages, rates.ncol()-1)]);
       }
     }
   }
