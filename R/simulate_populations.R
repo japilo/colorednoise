@@ -174,9 +174,10 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL,
     }
     if (demoStochasticity == T) {
         population <- demo_stochasticity(initialPop, elements$natural.noise)
-        population %>% as_tibble() %>% mutate(timestep = 1:n()) %>%
-            select(timestep, everything()) %>% set_names(c("timestep",
-            paste0("stage", 1:stages)))
+        population %>% as_tibble() %>%
+          by_row(., sum, .collate = "cols", .to = "total") %>%
+          mutate(timestep = 1:n()) %>% select(timestep, everything()) %>%
+          set_names(c("timestep", paste0("stage", 1:stages), "total"))
     } else if (demoStochasticity == F) {
         population <- projection(initialPop, elements$natural.noise)
         population %>% map(as_tibble) %>% bind_rows() %>%
