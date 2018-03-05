@@ -1,7 +1,7 @@
 Package: colorednoise
 Type: Package
 Title: Simulate Temporally Autocorrelated Populations
-Version: 0.0.2
+Version: 1.0.0
 Authors@R: c(person("Julia", "Pilowsky", email = "jap2178@caa.columbia.edu",
                   role = c("aut", "cre")),
            person("Elizabeth", "Crone", email = "elizabeth.crone@tufts.edu",
