@@ -26,7 +26,8 @@ Generates random variables that are correlated to each other and temporally auto
 }
 \examples{
 corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
-test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), corr, c(0.5, -0.3, 0))
+test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), corr)
 var(test)
+library(dplyr)
 test \%>\% as.data.frame() \%>\% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 }

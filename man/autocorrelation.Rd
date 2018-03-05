@@ -20,6 +20,6 @@ extracts only the temporal autocorrelation at a lag of one timestep (which is
 the type of temporal autocorrelation that this package simulates).
 }
 \examples{
-rednoise <- raw_noise(timesteps = 50, mu = 0.5, sigma = 0.2, phi = 0.3)
+rednoise <- colored_noise(timesteps = 50, mu = 0.5, sigma = 0.2, phi = 0.3)
 autocorrelation(rednoise)
 }

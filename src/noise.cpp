@@ -78,6 +78,7 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' Generate Multiple Cross-Correlated & Autocorrelated Variables
 //'
 //' Generates random variables that are correlated to each other and temporally autocorrelated.
+//'
 //' @param timesteps The number of temporally autocorrelated random numbers (one
 //'   per timestep) you want.
 //' @param mu A vector giving the mean of each variable.
@@ -87,8 +88,9 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
 //' @examples
 //' corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
-//' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), corr, c(0.5, -0.3, 0))
+//' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), corr)
 //' var(test)
+//' library(dplyr)
 //' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 //' @export
 // [[Rcpp::export]]
@@ -121,9 +123,3 @@ NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector
   }
   return noise;
 }
-
-// Test code
-
-/*** R
-colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
-*/

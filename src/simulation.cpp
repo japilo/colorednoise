@@ -9,7 +9,6 @@ using namespace arma;
 // This function changes the variance so that once it is back-transformed
 // from the logit scale, the original variance is recovered.
 // [[Rcpp::export]]
-
 double variancefix(double mu, double sigma, std::string dist){
   if (sigma == 0) {
     return 0;
@@ -42,7 +41,6 @@ double variancefix(double mu, double sigma, std::string dist){
 //' fertility unrealistically high, the population size will tend toward infinity and
 //' the simulation will fail because the numbers are too large to handle. Use your
 //' common sense as a demographer / population biologist.
-//' @import stats
 //' @param start The starting population size.
 //' @param timesteps The number of timesteps you want to simulate. Individuals
 //'   are added and killed off every timestep according to the survival and
@@ -62,8 +60,8 @@ double variancefix(double mu, double sigma, std::string dist){
 //'   alive at the start of the timestep), newborns (new individuals
 //'   born this timestep), and survivors (individuals who survive this timestep).
 //' @examples
-//' series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
-//' survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
+//' series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1,
+//' survMean = 0.6, survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
 //' head(series1)
 //' @export
 // [[Rcpp::export]]
@@ -71,19 +69,19 @@ DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecu
   // These lines generate the temporally autocorrelated random numbers
   double survmu = R::qlogis(survMean, 0, 1, true, false);
   double survsigma = variancefix(survMean, survSd, "qlogis");
-  NumericVector survnoise = colored_noise(timesteps, survmu, survsigma, survPhi);
-  NumericVector St = plogis(survnoise);
+  Rcpp::NumericVector survnoise = colored_noise(timesteps, survmu, survsigma, survPhi);
+  Rcpp::NumericVector St = plogis(survnoise);
   double fecundmu = log(fecundMean);
   double fecundsigma = variancefix(fecundMean, fecundSd, "log");
-  NumericVector fecundnoise = colored_noise(timesteps, fecundmu, fecundsigma, fecundPhi);
-  NumericVector Ft = exp(fecundnoise);
+  Rcpp::NumericVector fecundnoise = colored_noise(timesteps, fecundmu, fecundsigma, fecundPhi);
+  Rcpp::NumericVector Ft = exp(fecundnoise);
   // This loop kills some individuals according to St probabilities, creates
   // new ones according to Ft counts, calculates population size and growth,
   // and steps time until 'timesteps' has been reached.
-  IntegerVector population(timesteps);
+  std::vector<long> population(timesteps);
   population[0] = start;
-  IntegerVector survivors(timesteps);
-  IntegerVector newborns(timesteps);
+  std::vector<long> survivors(timesteps);
+  std::vector<long> newborns(timesteps);
   for(int i = 0; i < timesteps; ++i) {
     if (i < timesteps - 1) {
     survivors[i] = R::rbinom(population[i], St[i]);
@@ -97,9 +95,9 @@ DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecu
  IntegerVector timestep = seq_len(timesteps);
   DataFrame output = DataFrame::create(
     Named("timestep") = timestep,
-    _("newborns") = newborns,
-    _("survivors") = survivors,
-    Named("population") = population
+    _("newborns") = wrap(newborns),
+    _("survivors") = wrap(survivors),
+    Named("population") = wrap(population)
   );
   return output;
 }
@@ -143,41 +141,34 @@ Rcpp::List projection(arma::vec initialPop, List noise) {
 // Feed in an initial population vector and a matrix of vital rates for each year
 // Get out a matrix with stage-specific population each year
 // [[Rcpp::export]]
-NumericMatrix demo_stochasticity(NumericVector initialPop, List noise) {
-  NumericVector sample = noise[1];
+Rcpp::NumericMatrix demo_stochasticity(arma::Row<long> initialPop, List noise) {
+  Rcpp::NumericVector sample = noise[1];
   int timesteps = sample.length();
-  int stages = initialPop.length();
-  NumericMatrix rates(timesteps, stages*stages);
+  int stages = initialPop.size();
+  arma::mat rates(timesteps, stages*stages);
   for (int i = 0; i < noise.length(); ++i) {
-    NumericVector newcol = noise[i];
-    rates(_, i) = newcol;
+    arma::vec newcol = noise[i];
+    rates.col(i) = newcol;
   }
-  NumericMatrix population = NumericMatrix(timesteps, stages);
-  NumericMatrix elements = NumericMatrix(timesteps, rates.ncol());
-  population(0, _) = initialPop;
-  for(int i = 0; i < population.nrow()-1; ++i) {
-    for(int j = 0; j < population.ncol(); ++j) {
+  arma::Mat<long> population(timesteps, stages);
+  arma::Mat<long> elements(timesteps, stages*stages);
+  population.row(0) = initialPop;
+  for(int i = 0; i < timesteps-1; ++i) {
+    for(int j = 0; j < stages; ++j) {
       if (j == 0) {
         for(int k = 0; k < stages; ++k) {
           elements(i, k) = sum(Rcpp::rpois(population(i, k), rates(i, k)));
         }
-        NumericVector offspring = elements(i, _);
-        population(i+1, j) = sum(offspring[Range(0, stages-1)]);
+        arma::Row<long> offspring = elements.row(i);
+        population(i+1, j) = sum(offspring.subvec(0, stages-1));
       } else {
         for (int k = 0; k < stages; ++k) {
           elements(i, j+1+k) = R::rbinom(population(i, k), rates(i, stages+k));
         }
-        NumericVector recruits = elements(i, _);
-        population(i+1,j) = sum(recruits[Range(stages, rates.ncol()-1)]);
+        arma::Row<long> recruits = elements.row(i);
+        population(i+1,j) = sum(recruits.subvec(stages, stages*stages-1));
       }
     }
   }
-  return population;
+  return wrap(population);
 }
-
-// Test code
-
-/*** R
-unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
-           survSd = 0.2, fecundMean = 1.2, fecundSd = 0.7)
-*/

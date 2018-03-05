@@ -19,7 +19,7 @@
 #' rednoise
 #' @export
 colored_noise <- function(timesteps, mu, sigma, phi) {
-    .Call('_colorednoise_colored_noise', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi)
+    .Call(`_colorednoise_colored_noise`, timesteps, mu, sigma, phi)
 }
 
 #' Generate Correlated Normal Random Numbers
@@ -37,7 +37,7 @@ colored_noise <- function(timesteps, mu, sigma, phi) {
 #' var(mat)
 #' @export
 multi_rnorm <- function(n, mu, sigma) {
-    .Call('_colorednoise_multi_rnorm', PACKAGE = 'colorednoise', n, mu, sigma)
+    .Call(`_colorednoise_multi_rnorm`, n, mu, sigma)
 }
 
 #' Convert from Correlation Matrix to Covariance Matrix
@@ -53,12 +53,13 @@ multi_rnorm <- function(n, mu, sigma) {
 #' cov2cor(covar)
 #' @export
 cor2cov <- function(sigma, corrMatrix) {
-    .Call('_colorednoise_cor2cov', PACKAGE = 'colorednoise', sigma, corrMatrix)
+    .Call(`_colorednoise_cor2cov`, sigma, corrMatrix)
 }
 
 #' Generate Multiple Cross-Correlated & Autocorrelated Variables
 #'
 #' Generates random variables that are correlated to each other and temporally autocorrelated.
+#'
 #' @param timesteps The number of temporally autocorrelated random numbers (one
 #'   per timestep) you want.
 #' @param mu A vector giving the mean of each variable.
@@ -68,16 +69,17 @@ cor2cov <- function(sigma, corrMatrix) {
 #' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
 #' @examples
 #' corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
-#' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), corr, c(0.5, -0.3, 0))
+#' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), corr)
 #' var(test)
+#' library(dplyr)
 #' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 #' @export
 colored_multi_rnorm <- function(timesteps, mu, sigma, phi, corrMatrix) {
-    .Call('_colorednoise_colored_multi_rnorm', PACKAGE = 'colorednoise', timesteps, mu, sigma, phi, corrMatrix)
+    .Call(`_colorednoise_colored_multi_rnorm`, timesteps, mu, sigma, phi, corrMatrix)
 }
 
 variancefix <- function(mu, sigma, dist) {
-    .Call('_colorednoise_variancefix', PACKAGE = 'colorednoise', mu, sigma, dist)
+    .Call(`_colorednoise_variancefix`, mu, sigma, dist)
 }
 
 #' Simulated Time Series of an Unstructured Temporally Autocorrelated Population
@@ -95,7 +97,6 @@ variancefix <- function(mu, sigma, dist) {
 #' fertility unrealistically high, the population size will tend toward infinity and
 #' the simulation will fail because the numbers are too large to handle. Use your
 #' common sense as a demographer / population biologist.
-#' @import stats
 #' @param start The starting population size.
 #' @param timesteps The number of timesteps you want to simulate. Individuals
 #'   are added and killed off every timestep according to the survival and
@@ -115,19 +116,19 @@ variancefix <- function(mu, sigma, dist) {
 #'   alive at the start of the timestep), newborns (new individuals
 #'   born this timestep), and survivors (individuals who survive this timestep).
 #' @examples
-#' series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
-#' survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
+#' series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1,
+#' survMean = 0.6, survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
 #' head(series1)
 #' @export
 unstructured_pop <- function(start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd) {
-    .Call('_colorednoise_unstructured_pop', PACKAGE = 'colorednoise', start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
+    .Call(`_colorednoise_unstructured_pop`, start, timesteps, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd)
 }
 
 projection <- function(initialPop, noise) {
-    .Call('_colorednoise_projection', PACKAGE = 'colorednoise', initialPop, noise)
+    .Call(`_colorednoise_projection`, initialPop, noise)
 }
 
-demo_stochasticity <- function(initialPop, rates) {
-    .Call('_colorednoise_demo_stochasticity', PACKAGE = 'colorednoise', initialPop, rates)
+demo_stochasticity <- function(initialPop, noise) {
+    .Call(`_colorednoise_demo_stochasticity`, initialPop, noise)
 }
 

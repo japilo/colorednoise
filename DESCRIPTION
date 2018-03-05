@@ -10,9 +10,10 @@ Description: Temporally autocorrelated populations are correlated in their vital
     This package provides tools for simulating populations with white noise (no temporal autocorrelation), red noise (positive temporal autocorrelation), and blue noise (negative temporal autocorrelation).  The algebraic formulation for autocorrelated noise comes from Ruokolainen et al. (2009) <doi:10.1016/j.tree.2009.04.009>. Models for unstructured populations and for structured populations (matrix models) are available.
 Depends: R (>= 3.3.0)
 Imports:
+  stats (>= 3.3.2),
   dplyr (>= 0.7.3),
   purrr (>= 0.2.3),
-  stats (>= 3.3.2),
+  purrrlyr (>= 0.0.2),
   Rcpp (>= 0.12.15),
   RcppArmadillo (>= 0.8)
 License: GPL-3

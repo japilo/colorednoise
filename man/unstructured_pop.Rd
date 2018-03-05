@@ -53,7 +53,7 @@ the simulation will fail because the numbers are too large to handle. Use your
 common sense as a demographer / population biologist.
 }
 \examples{
-series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1, survMean = 0.6,
-survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
+series1 <- unstructured_pop(start = 20, timesteps = 10, survPhi = 0.7, fecundPhi = -0.1,
+survMean = 0.6, survSd = 0.52, fecundMean = 1.2, fecundSd = 0.7)
 head(series1)
 }

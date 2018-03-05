@@ -104,14 +104,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // demo_stochasticity
-NumericMatrix demo_stochasticity(NumericVector initialPop, NumericMatrix rates);
-RcppExport SEXP _colorednoise_demo_stochasticity(SEXP initialPopSEXP, SEXP ratesSEXP) {
+Rcpp::NumericMatrix demo_stochasticity(arma::Row<long> initialPop, List noise);
+RcppExport SEXP _colorednoise_demo_stochasticity(SEXP initialPopSEXP, SEXP noiseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type initialPop(initialPopSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type rates(ratesSEXP);
-    rcpp_result_gen = Rcpp::wrap(demo_stochasticity(initialPop, rates));
+    Rcpp::traits::input_parameter< arma::Row<long> >::type initialPop(initialPopSEXP);
+    Rcpp::traits::input_parameter< List >::type noise(noiseSEXP);
+    rcpp_result_gen = Rcpp::wrap(demo_stochasticity(initialPop, noise));
     return rcpp_result_gen;
 END_RCPP
 }
