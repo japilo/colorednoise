@@ -3,7 +3,7 @@
 #' Simulate Temporally Autocorrelated Populations
 #'
 #' See the README on
-#' \href{https://cran.r-project.org/web/packages/colorednoise/README.html}{CRAN}
+#' \href{https://cran.r-project.org/package=colorednoise/README.html}{CRAN}
 #' or \href{https://github.com/japilo/colorednoise#readme}{GitHub}
 #'
 #' @docType package
@@ -15,5 +15,7 @@
 #' @importFrom purrrlyr by_row
 NULL
 
-## quiets concerns of R CMD check re: the .'s that appear in pipelines
-if(getRversion() >= "2.15.1")  utils::globalVariables(c(".", "mean.trans", "sd.trans", "noise", "timestep", "dist"))
+## quiets concerns of R CMD check re: the .'s that appear in
+## pipelines
+if (getRversion() >= "2.15.1") utils::globalVariables(c(".", "mean.trans", 
+    "sd.trans", "noise", "timestep", "dist"))
