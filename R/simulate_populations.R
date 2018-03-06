@@ -38,13 +38,13 @@
 #'                                fecundMean = 1.1, fecundSd = 0.5, replicates = 50)
 #' head(survival_range[[1]])
 #' @export
-autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
+autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean, 
     survSd, fecundMean, fecundSd, replicates) {
     # Simulates a population for each combination of parameters
     # -----------
-    raw_sims <- cross_df(list(start = start, timesteps = timesteps,
-        survPhi = survPhi, fecundPhi = fecundPhi, survMean = survMean,
-        survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd)) %>%
+    raw_sims <- cross_df(list(start = start, timesteps = timesteps, 
+        survPhi = survPhi, fecundPhi = fecundPhi, survMean = survMean, 
+        survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd)) %>% 
         rerun(.n = replicates, pmap(., unstructured_pop))
     # Labels each simulation with the parameters that generated it
     # ------
@@ -52,12 +52,12 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
     for (i in 1:length(raw_sims)) {
         labeled_sims[[i]] <- vector(mode = "list", nrow(raw_sims[[1]][[1]]))
         for (j in 1:length(raw_sims[[i]][[2]])) {
-            labeled_sims[[i]][[j]] <- cbind(raw_sims[[i]][[2]][[j]],
+            labeled_sims[[i]][[j]] <- cbind(raw_sims[[i]][[2]][[j]], 
                 raw_sims[[i]][[1]][j, ])
         }
     }
     # Unnests the list and adds estimates of survival and fertility
-    sims <- labeled_sims %>% flatten() %>% map(~mutate(., est_surv = survivors/population,
+    sims <- labeled_sims %>% flatten() %>% map(~mutate(., est_surv = survivors/population, 
         est_fecund = newborns/survivors))
     return(sims)
 }
@@ -108,14 +108,15 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' sim <- matrix_model(list(meanMat, sdMat, phiMat), initialPop, 50)
 #' head(sim)
 #' @export
-matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL,
+matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL, 
     colNames = NULL, matrixStructure = NULL, demoStochasticity = FALSE) {
     stages <- length(initialPop)
     if (is.data.frame(data) == T) {
         if (is.null(colNames) == F) {
-            data <- data[, colNames] %>% rename(!!!colNames)
+            data <- data[, colNames] %>% rename(!(!(!colNames)))
         }
-        if (all(names(data) == c("mean", "sd", "autocorrelation")) == F) {
+        if (all(names(data) == c("mean", "sd", "autocorrelation")) == 
+            F) {
             stop("Please name data frame columns correctly")
         }
         if (stages^2 != nrow(data)) {
@@ -138,51 +139,51 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL,
         if (all(data[[2]] >= 0) == F) {
             stop("Invalid values in SD matrix")
         }
-        dat <- tibble(mean = as.vector(t(data[[1]])), sd = as.vector(t(data[[2]])),
+        dat <- tibble(mean = as.vector(t(data[[1]])), sd = as.vector(t(data[[2]])), 
             autocorrelation = as.vector(t(data[[3]])))
     } else {
         stop("Invalid data type. Must be a list of three matrices or a data frame with three columns.")
     }
     if (is.null(matrixStructure) == T) {
-        df <- dat %>% cbind(dist = c(rep("log", stages), rep("qlogis",
+        df <- dat %>% cbind(dist = c(rep("log", stages), rep("qlogis", 
             nrow(dat) - stages))) %>% mutate(dist = as.character(dist))
     } else if (all(dim(matrixStructure) == c(stages, stages)) == T) {
         stopifnot(matrixStructure == c("fecundity", "transition"))
-        dists <- ifelse(as.vector(t(matrixStructure)) == "fecundity",
+        dists <- ifelse(as.vector(t(matrixStructure)) == "fecundity", 
             "log", "qlogis")
         df <- dat %>% cbind(dist = dists) %>% mutate(dist = as.character(dist))
     } else {
         stop("Either your initial population vector has an invalid length or your matrixStructure is invalid")
     }
     if (is.null(corrMatrix) == T) {
-        elements <- df %>% rowwise() %>% mutate(mean.trans = ifelse(mean ==
-            0, 0, invoke(dist, list(mean))), sd.trans = ifelse(sd ==
-            0, 0, variancefix(mean, sd, dist)), noise = list(colored_noise(timesteps,
-            mean.trans, sd.trans, autocorrelation)), natural.noise = ifelse(all(noise ==
-            0) == T, list(noise), ifelse(dist == "log", list(exp(noise)),
+        elements <- df %>% rowwise() %>% mutate(mean.trans = ifelse(mean == 
+            0, 0, invoke(dist, list(mean))), sd.trans = ifelse(sd == 
+            0, 0, variancefix(mean, sd, dist)), noise = list(colored_noise(timesteps, 
+            mean.trans, sd.trans, autocorrelation)), natural.noise = ifelse(all(noise == 
+            0) == T, list(noise), ifelse(dist == "log", list(exp(noise)), 
             list(plogis(noise)))))
     } else if (is.matrix(corrMatrix) == T) {
-        elements <- df %>% rowwise() %>% mutate(mean.trans = invoke(dist,
+        elements <- df %>% rowwise() %>% mutate(mean.trans = invoke(dist, 
             list(mean)), sd.trans = variancefix(mean, sd, dist))
-        elements$noise <- colored_multi_rnorm(100, elements$mean.trans,
-            elements$sd.trans, elements$autocorrelation, corrMatrix) %>%
+        elements$noise <- colored_multi_rnorm(100, elements$mean.trans, 
+            elements$sd.trans, elements$autocorrelation, corrMatrix) %>% 
             split(rep(1:ncol(.), each = nrow(.)))
-        elements <- elements %>% mutate(natural.noise = ifelse(dist ==
+        elements <- elements %>% mutate(natural.noise = ifelse(dist == 
             "log", list(exp(noise)), list(plogis(noise))))
     } else {
         stop("Correlation matrix must be in matrix format")
     }
     if (demoStochasticity == T) {
         population <- demo_stochasticity(initialPop, elements$natural.noise)
-        population %>% as_tibble() %>%
-          by_row(., sum, .collate = "cols", .to = "total") %>%
-          mutate(timestep = 1:n()) %>% select(timestep, everything()) %>%
-          set_names(c("timestep", paste0("stage", 1:stages), "total"))
+        population %>% as_tibble() %>% by_row(., sum, .collate = "cols", 
+            .to = "total") %>% mutate(timestep = 1:n()) %>% select(timestep, 
+            everything()) %>% set_names(c("timestep", paste0("stage", 
+            1:stages), "total"))
     } else if (demoStochasticity == F) {
         population <- projection(initialPop, elements$natural.noise)
-        population %>% map(as_tibble) %>% bind_rows() %>%
-          by_row(., sum, .collate = "cols", .to = "total") %>%
-          mutate(timestep = 1:n()) %>% select(timestep, everything()) %>%
-          set_names(c("timestep", paste0("stage", 1:stages), "total"))
+        population %>% map(as_tibble) %>% bind_rows() %>% by_row(., 
+            sum, .collate = "cols", .to = "total") %>% mutate(timestep = 1:n()) %>% 
+            select(timestep, everything()) %>% set_names(c("timestep", 
+            paste0("stage", 1:stages), "total"))
     }
 }

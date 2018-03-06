@@ -9,7 +9,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r preliminaries, echo = F, message = F}
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
 library("colorednoise")
 library("dplyr")
 library("ggplot2")
