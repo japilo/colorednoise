@@ -6,8 +6,8 @@ r:
 cache: packages
 sudo: false
 os:
-osx
-linux
+- osx
+- linux
 osx_image: xcode8
 dist: trusty
 
