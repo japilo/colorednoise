@@ -4,6 +4,8 @@ colorednoise
 
 [![Travis\_build\_status](https://travis-ci.org/japilo/colorednoise.svg?branch=master)](https://travis-ci.org/japilo/colorednoise)
 [![CRAN\_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise)
+[![Coverage
+Status](https://img.shields.io/codecov/c/github/japilo/colorednoise/master.svg)](https://codecov.io/github/japilo/colorednoise?branch=master)
 [![Download\_count](http://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](http://cran.rstudio.com/web/packages/colorednoise/index.html)
 
 Overview

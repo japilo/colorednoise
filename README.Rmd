@@ -17,7 +17,9 @@ library(ggplot2)
 
 # colorednoise
 [![Travis_build_status](https://travis-ci.org/japilo/colorednoise.svg?branch=master)](https://travis-ci.org/japilo/colorednoise)
-[![CRAN_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise) [![Download_count](http://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](http://cran.rstudio.com/web/packages/colorednoise/index.html)
+[![CRAN_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise)
+[![Coverage Status](https://img.shields.io/codecov/c/github/japilo/colorednoise/master.svg)](https://codecov.io/github/japilo/colorednoise?branch=master)
+[![Download_count](http://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](http://cran.rstudio.com/web/packages/colorednoise/index.html)
 
 ## Overview
 

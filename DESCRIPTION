@@ -24,5 +24,6 @@ Suggests:
     ggplot2 (>= 2.2.1),
     knitr (>= 1.17),
     rmarkdown (>= 1.6),
-    testthat (>= 1.0.2)
+    testthat (>= 1.0.2),
+    covr (>= 3.0.0)
 VignetteBuilder: knitr
