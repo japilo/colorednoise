@@ -8,6 +8,6 @@ sudo: false
 os:
 - osx
 - linux
-osx_image: xcode8
+osx_image: xcode9
 dist: trusty
 
