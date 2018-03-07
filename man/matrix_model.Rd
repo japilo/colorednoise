@@ -5,7 +5,7 @@
 \title{Temporally Autocorrelated Matrix Population Models}
 \usage{
 matrix_model(data, initialPop, timesteps, corrMatrix = NULL,
-  colNames = NULL, matrixStructure = NULL, demoStochasticity = FALSE)
+  colNames = NULL, matrixStructure = NULL)
 }
 \arguments{
 \item{data}{The input data can be one of two formats: a list of three matrices, or a data frame
@@ -34,14 +34,6 @@ the rest of the matrix gives transition or survival probabilities. However, thes
 many plant matrices. If your matrix has transition probabilities in the first row or fecundities beyond the first row
 (e.g., clonal reproduction), provide a character matrix here with the same dimensions as your matrix that gives in
 strings whether each element is 'fecundity' or 'transition'.}
-
-\item{demoStochasticity}{By default, the matrix model is run without demographic stochasticity - that is,
-it simply matrix-multiplies the population vector by a stochastic matrix of vital rates. If you would prefer a
-stochastic projection with demographic stochasticity, that is, the given vital rates are used as rates for
-probability distributions of survival and fertility, set this argument to TRUE. Please note that the function becomes
-much more computationally intensive if you turn on demographic stochasticity. It is also important to note that the
-deomgraphic stochasticity helper function cannot handle population sizes larger than the maximum for 32-bit integers,
-and will therefore crash if asked to model large populations with high population growth for long time periods.}
 }
 \value{
 A data frame with n + 2 columns, where n is the number of stages in the matrix. One column indicates the timestep,
@@ -51,8 +43,7 @@ there is one column with the population size for each stage, and one column for 
 Simulate a structured population with temporal autocorrelation using standard Leslie matrices.
 Each element in the Leslie matrix has a specified mean, variance, and temporal autocorrelation value.
 The matrix can have arbitrary dimensions and can have transitions besides linear survival. This model
-includes environmental stochasticity with colored noise as well as demographic stochasticity. Density
-dependence is not currently supported.
+includes environmental stochasticity with colored noise. Density dependence and demographic stochasticity not currently supported.
 }
 \examples{
 meanMat <- matrix(c(0.55, 0.6, 0.24, 0.4), byrow = TRUE, ncol = 2)

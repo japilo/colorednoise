@@ -10,5 +10,5 @@ os:
 - linux
 osx_image: xcode9
 dist: trusty
-install: 
-  - R -e 'install.packages(c("dplyr", "purrr", "purrrlyr", "Rcpp", "RcppArmadillo"))'
+install:
+  - R -e 'install.packages(c("dplyr", "purrr", "purrrlyr", "Rcpp", "RcppArmadillo", "knitr"))'
