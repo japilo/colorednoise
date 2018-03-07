@@ -14,7 +14,7 @@ Imports:
   dplyr (>= 0.7.3),
   purrr (>= 0.2.3),
   purrrlyr (>= 0.0.2),
-  Rcpp (>= 0.12.15)
+  Rcpp (>= 0.12.13)
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1
 Encoding: UTF-8
