@@ -117,7 +117,7 @@ NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector
   int ncols = noise.ncol();
   int nrows = noise.nrow();
   for (int i = 0; i < ncols; ++i) {
-     for (int j = 0; j < nrows; ++j) {
+     for (int j = 0; j < nrows-1; ++j) {
        noise(j+1,i) = delta[i] + phi[i]*noise(j,i) + draws(j,i);
    }
   }

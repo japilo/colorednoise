@@ -1,36 +1,13 @@
 language: r
 cache: packages
-sudo: required
+sudo: false
+r:
+  - oldrel
+  - release
+  - devel
 
-r_packages:
-- dplyr
-- purrr
-- purrrlyr
-- Rcpp
-- RcppArmadillo
-- knitr
-- ggplot2
-- rmarkdown
-- testthat
-- covr
+install:
+  - R -e 'install.packages(c("dplyr", "purrr", "purrrlyr", "Rcpp", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr"))'
 
-## test different platforms
-matrix:
-  include:
-  - os: linux
-    r: oldrel
-  - os: linux
-    r: release
-  - os: linux
-    r: devel
-  - os: osx
-    r: release
-    before_install:
-      - sudo chown -R travis /usr/local
-      - sudo rm '/usr/local/include/c++'
-      - sudo rm '/usr/local/bin/gfortran'
-      - brew install gcc
-
-##grep data from testthat
 after_success:
 - Rscript -e 'covr::codecov()'

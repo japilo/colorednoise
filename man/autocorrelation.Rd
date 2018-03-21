@@ -4,10 +4,13 @@
 \alias{autocorrelation}
 \title{Estimate the Temporal Autocorrelation of a Numeric Vector}
 \usage{
-autocorrelation(x, na.action = na.omit)
+autocorrelation(x, biasCorrection = TRUE, na.action = na.omit)
 }
 \arguments{
 \item{x}{A numeric vector.}
+
+\item{biasCorrection}{Autocorrelation estimates are biased for short time series. The function can
+correct for this bias in the manner proposed by Quenouille (1949). Set to TRUE by default.}
 
 \item{na.action}{The way the function will handle NAs in the vector. Set to \code{\link[stats]{na.pass}} by default.}
 }
