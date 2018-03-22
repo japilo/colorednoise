@@ -11,7 +11,7 @@
 #' correct for this bias in the manner proposed by Quenouille (1949). Set to TRUE by default.
 #' @return A single numeric value: the estimate of the temporal autocorrelation with a lag of 1.
 #' @examples
-#' rednoise <- colored_noise(timesteps = 50, mu = 0.5, sigma = 0.2, phi = 0.3)
+#' rednoise <- colored_noise(timesteps = 50, mean = 0.5, sd = 0.2, phi = 0.3)
 #' autocorrelation(rednoise)
 #' @export
 autocorrelation <- function(x, biasCorrection = TRUE) {
@@ -23,5 +23,5 @@ autocorrelation <- function(x, biasCorrection = TRUE) {
     r2 <- acf(y[(round(length(y)/2)+1):length(y)], plot = F)[[1]][2]
     2*r - 0.5*(r1 + r2)
   } else if (biasCorrection == FALSE) {
-    acf(y, plot = F, na.action = na.omit)[[1]][2]}
+    acf(x, plot = F, na.action = na.omit)[[1]][2]}
 }

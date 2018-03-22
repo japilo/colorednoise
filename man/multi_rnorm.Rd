@@ -4,17 +4,17 @@
 \alias{multi_rnorm}
 \title{Generate Correlated Normal Random Numbers}
 \usage{
-multi_rnorm(n, mu, sigma)
+multi_rnorm(n, mean, sd)
 }
 \arguments{
 \item{n}{The number of samples desired for each variable.}
 
-\item{mu}{A vector giving the mean of each variable.}
+\item{mean}{A vector giving the mean of each variable.}
 
-\item{sigma}{A valid covariance matrix.}
+\item{sd}{A valid covariance matrix.}
 }
 \value{
-A matrix with n rows and as many columns as mu values.
+A matrix with n rows and as many columns as mean values.
 }
 \description{
 Generate random numbers from a multivariate normal distribution.

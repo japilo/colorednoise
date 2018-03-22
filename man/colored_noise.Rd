@@ -4,15 +4,15 @@
 \alias{colored_noise}
 \title{Generate Autocorrelated Noise}
 \usage{
-colored_noise(timesteps, mu, sigma, phi)
+colored_noise(timesteps, mean, sd, phi)
 }
 \arguments{
 \item{timesteps}{The number of temporally autocorrelated random numbers (one
 per timestep) you want.}
 
-\item{mu}{The mean of the temporally autocorrelated random numbers.}
+\item{mean}{The mean of the temporally autocorrelated random numbers.}
 
-\item{sigma}{The standard deviation of the temporally autocorrelated random
+\item{sd}{The standard deviation of the temporally autocorrelated random
 numbers.}
 
 \item{phi}{The temporal autocorrelation. 0 is white noise (uncorrelated),
@@ -27,6 +27,6 @@ Generates temporally autocorrelated random numbers with a mean,
 standard deviation, and autocorrelation you specify.
 }
 \examples{
-rednoise <- colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+rednoise <- colored_noise(timesteps = 30, mean = 0.5, sd = 0.2, phi = 0.3)
 rednoise
 }

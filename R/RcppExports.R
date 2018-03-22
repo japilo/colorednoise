@@ -7,19 +7,19 @@
 #' standard deviation, and autocorrelation you specify.
 #' @param timesteps The number of temporally autocorrelated random numbers (one
 #'   per timestep) you want.
-#' @param mu The mean of the temporally autocorrelated random numbers.
-#' @param sigma The standard deviation of the temporally autocorrelated random
+#' @param mean The mean of the temporally autocorrelated random numbers.
+#' @param sd The standard deviation of the temporally autocorrelated random
 #'   numbers.
 #' @param phi The temporal autocorrelation. 0 is white noise (uncorrelated),
 #'   positive values are red noise (directly correlated) and negative values are blue
 #'   noise (inversely correlated).
 #' @return A vector of temporally autocorrelated random numbers.
 #' @examples
-#' rednoise <- colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+#' rednoise <- colored_noise(timesteps = 30, mean = 0.5, sd = 0.2, phi = 0.3)
 #' rednoise
 #' @export
-colored_noise <- function(timesteps, mu, sigma, phi) {
-    .Call(`_colorednoise_colored_noise`, timesteps, mu, sigma, phi)
+colored_noise <- function(timesteps, mean, sd, phi) {
+    .Call(`_colorednoise_colored_noise`, timesteps, mean, sd, phi)
 }
 
 #' Generate Correlated Normal Random Numbers
@@ -27,17 +27,17 @@ colored_noise <- function(timesteps, mu, sigma, phi) {
 #' Generate random numbers from a multivariate normal distribution.
 #' It can be used to create correlated random numbers.
 #' @param n The number of samples desired for each variable.
-#' @param mu A vector giving the mean of each variable.
-#' @param sigma A valid covariance matrix.
-#' @return A matrix with n rows and as many columns as mu values.
+#' @param mean A vector giving the mean of each variable.
+#' @param sd A valid covariance matrix.
+#' @return A matrix with n rows and as many columns as mean values.
 #' @examples
 #' mus <- c(0, 3, 5)
 #' sigmas <- matrix(c(1, 0.265, 2.19, 0.265, 0.25, 0.66, 2.19, 0.66, 9), ncol = 3)
 #' mat <- multi_rnorm(100, mus, sigmas)
 #' var(mat)
 #' @export
-multi_rnorm <- function(n, mu, sigma) {
-    .Call(`_colorednoise_multi_rnorm`, n, mu, sigma)
+multi_rnorm <- function(n, mean, sd) {
+    .Call(`_colorednoise_multi_rnorm`, n, mean, sd)
 }
 
 #' Convert from Correlation Matrix to Covariance Matrix
@@ -62,8 +62,8 @@ cor2cov <- function(sigma, corrMatrix) {
 #'
 #' @param timesteps The number of temporally autocorrelated random numbers (one
 #'   per timestep) you want.
-#' @param mu A vector giving the mean of each variable.
-#' @param sigma A vector giving the standard deviation of each variable.
+#' @param mean A vector giving the mean of each variable.
+#' @param sd A vector giving the standard deviation of each variable.
 #' @param phi A vector giving the temporal autocorrelation of each variable.
 #' @param corrMatrix A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
 #' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
@@ -74,8 +74,8 @@ cor2cov <- function(sigma, corrMatrix) {
 #' library(dplyr)
 #' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 #' @export
-colored_multi_rnorm <- function(timesteps, mu, sigma, phi, corrMatrix) {
-    .Call(`_colorednoise_colored_multi_rnorm`, timesteps, mu, sigma, phi, corrMatrix)
+colored_multi_rnorm <- function(timesteps, mean, sd, phi, corrMatrix) {
+    .Call(`_colorednoise_colored_multi_rnorm`, timesteps, mean, sd, phi, corrMatrix)
 }
 
 variancefix <- function(mu, sigma, dist) {

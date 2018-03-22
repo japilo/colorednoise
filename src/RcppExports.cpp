@@ -7,29 +7,29 @@
 using namespace Rcpp;
 
 // colored_noise
-NumericVector colored_noise(int timesteps, double mu, double sigma, double phi);
-RcppExport SEXP _colorednoise_colored_noise(SEXP timestepsSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP phiSEXP) {
+NumericVector colored_noise(int timesteps, double mean, double sd, double phi);
+RcppExport SEXP _colorednoise_colored_noise(SEXP timestepsSEXP, SEXP meanSEXP, SEXP sdSEXP, SEXP phiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type timesteps(timestepsSEXP);
-    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< double >::type sd(sdSEXP);
     Rcpp::traits::input_parameter< double >::type phi(phiSEXP);
-    rcpp_result_gen = Rcpp::wrap(colored_noise(timesteps, mu, sigma, phi));
+    rcpp_result_gen = Rcpp::wrap(colored_noise(timesteps, mean, sd, phi));
     return rcpp_result_gen;
 END_RCPP
 }
 // multi_rnorm
-arma::mat multi_rnorm(int n, NumericVector mu, NumericMatrix sigma);
-RcppExport SEXP _colorednoise_multi_rnorm(SEXP nSEXP, SEXP muSEXP, SEXP sigmaSEXP) {
+arma::mat multi_rnorm(int n, NumericVector mean, NumericMatrix sd);
+RcppExport SEXP _colorednoise_multi_rnorm(SEXP nSEXP, SEXP meanSEXP, SEXP sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type sigma(sigmaSEXP);
-    rcpp_result_gen = Rcpp::wrap(multi_rnorm(n, mu, sigma));
+    Rcpp::traits::input_parameter< NumericVector >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type sd(sdSEXP);
+    rcpp_result_gen = Rcpp::wrap(multi_rnorm(n, mean, sd));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -46,17 +46,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // colored_multi_rnorm
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericVector phi, NumericMatrix corrMatrix);
-RcppExport SEXP _colorednoise_colored_multi_rnorm(SEXP timestepsSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP phiSEXP, SEXP corrMatrixSEXP) {
+NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVector sd, NumericVector phi, NumericMatrix corrMatrix);
+RcppExport SEXP _colorednoise_colored_multi_rnorm(SEXP timestepsSEXP, SEXP meanSEXP, SEXP sdSEXP, SEXP phiSEXP, SEXP corrMatrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type timesteps(timestepsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sd(sdSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type phi(phiSEXP);
     Rcpp::traits::input_parameter< NumericMatrix >::type corrMatrix(corrMatrixSEXP);
-    rcpp_result_gen = Rcpp::wrap(colored_multi_rnorm(timesteps, mu, sigma, phi, corrMatrix));
+    rcpp_result_gen = Rcpp::wrap(colored_multi_rnorm(timesteps, mean, sd, phi, corrMatrix));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -9,23 +9,23 @@ using namespace arma;
 //' standard deviation, and autocorrelation you specify.
 //' @param timesteps The number of temporally autocorrelated random numbers (one
 //'   per timestep) you want.
-//' @param mu The mean of the temporally autocorrelated random numbers.
-//' @param sigma The standard deviation of the temporally autocorrelated random
+//' @param mean The mean of the temporally autocorrelated random numbers.
+//' @param sd The standard deviation of the temporally autocorrelated random
 //'   numbers.
 //' @param phi The temporal autocorrelation. 0 is white noise (uncorrelated),
 //'   positive values are red noise (directly correlated) and negative values are blue
 //'   noise (inversely correlated).
 //' @return A vector of temporally autocorrelated random numbers.
 //' @examples
-//' rednoise <- colored_noise(timesteps = 30, mu = 0.5, sigma = 0.2, phi = 0.3)
+//' rednoise <- colored_noise(timesteps = 30, mean = 0.5, sd = 0.2, phi = 0.3)
 //' rednoise
 //' @export
 // [[Rcpp::export]]
-NumericVector colored_noise(int timesteps, double mu, double sigma, double phi) {
-  double delta = mu * (1 - phi);
-  double variance = pow(sigma, 2.0) * (1 - pow(phi, 2.0));
+NumericVector colored_noise(int timesteps, double mean, double sd, double phi) {
+  double delta = mean * (1 - phi);
+  double variance = pow(sd, 2.0) * (1 - pow(phi, 2.0));
   NumericVector noise(timesteps);
-  noise[0] = R::rnorm(mu, sigma);
+  noise[0] = R::rnorm(mean, sd);
   for(int i = 0; i < timesteps-1; ++i) {
     noise[i+1] = delta + phi*noise[i] + R::rnorm(0, sqrt(variance));
   }
@@ -37,9 +37,9 @@ NumericVector colored_noise(int timesteps, double mu, double sigma, double phi) 
 //' Generate random numbers from a multivariate normal distribution.
 //' It can be used to create correlated random numbers.
 //' @param n The number of samples desired for each variable.
-//' @param mu A vector giving the mean of each variable.
-//' @param sigma A valid covariance matrix.
-//' @return A matrix with n rows and as many columns as mu values.
+//' @param mean A vector giving the mean of each variable.
+//' @param sd A valid covariance matrix.
+//' @return A matrix with n rows and as many columns as mean values.
 //' @examples
 //' mus <- c(0, 3, 5)
 //' sigmas <- matrix(c(1, 0.265, 2.19, 0.265, 0.25, 0.66, 2.19, 0.66, 9), ncol = 3)
@@ -47,9 +47,9 @@ NumericVector colored_noise(int timesteps, double mu, double sigma, double phi) 
 //' var(mat)
 //' @export
 // [[Rcpp::export]]
-arma::mat multi_rnorm(int n, NumericVector mu, NumericMatrix sigma) {
-  arma::vec mu2 = as<arma::vec>(mu);
-  arma::mat sigma2 = as<arma::mat>(sigma);
+arma::mat multi_rnorm(int n, NumericVector mean, NumericMatrix sd) {
+  arma::vec mu2 = as<arma::vec>(mean);
+  arma::mat sigma2 = as<arma::mat>(sd);
   int ncols = sigma2.n_cols;
   arma::mat Y = arma::randn(n, ncols);
   return arma::repmat(mu2, 1, n).t() + Y * arma::chol(sigma2);
@@ -81,8 +81,8 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //'
 //' @param timesteps The number of temporally autocorrelated random numbers (one
 //'   per timestep) you want.
-//' @param mu A vector giving the mean of each variable.
-//' @param sigma A vector giving the standard deviation of each variable.
+//' @param mean A vector giving the mean of each variable.
+//' @param sd A vector giving the standard deviation of each variable.
 //' @param phi A vector giving the temporal autocorrelation of each variable.
 //' @param corrMatrix A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
 //' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
@@ -94,24 +94,24 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 //' @export
 // [[Rcpp::export]]
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mu, NumericVector sigma, NumericVector phi, NumericMatrix corrMatrix) {
-  // Convert mu and sigma to delta and modified SD
-  NumericVector sigma2(sigma.length());
-  NumericVector delta(mu.length());
-  for (int i = 0; i < mu.length(); ++i) {
-    delta[i] = mu[i] * (1 - phi[i]);
+NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVector sd, NumericVector phi, NumericMatrix corrMatrix) {
+  // Convert mean and sd to delta and modified SD
+  NumericVector sigma2(sd.length());
+  NumericVector delta(mean.length());
+  for (int i = 0; i < mean.length(); ++i) {
+    delta[i] = mean[i] * (1 - phi[i]);
   }
-  for (int i = 0; i < sigma.length(); ++i) {
-    sigma2[i] = sqrt(pow(sigma[i], 2.0) * (1 - pow(phi[i], 2.0)));
+  for (int i = 0; i < sd.length(); ++i) {
+    sigma2[i] = sqrt(pow(sd[i], 2.0) * (1 - pow(phi[i], 2.0)));
   }
   // Generate cross-correlated noise with modified SD around zero
   NumericMatrix cov = wrap(cor2cov(sigma2, corrMatrix));
-  NumericVector zeroes(mu.length());
+  NumericVector zeroes(mean.length());
   NumericMatrix draws = wrap(multi_rnorm(timesteps, zeroes, cov));
-  // initialize colored noise vectors with corresponding mu and sigma
-  NumericMatrix noise(timesteps, sigma.length());
-  for (int i = 0; i < sigma.length(); ++i) {
-    noise(0,i) = R::rnorm(mu[i], sigma[i]);
+  // initialize colored noise vectors with corresponding mean and sd
+  NumericMatrix noise(timesteps, sd.length());
+  for (int i = 0; i < sd.length(); ++i) {
+    noise(0,i) = R::rnorm(mean[i], sd[i]);
   }
   // Generate colored noise using draws from correlated noise
   int ncols = noise.ncol();

@@ -33,8 +33,8 @@ Mathematically, we can also think of unautocorrelated stochasticity as random si
 Expressed graphically, colored noise looks like this:
 
 ```{r comparing red and blue noise, echo = F}
-blue <- colored_noise(timesteps = 100, mu = 0.5, sigma = 0.2, phi = -0.5)
-red <- colored_noise(timesteps = 100, mu = 0.5, sigma = 0.2, phi = 0.5)
+blue <- colored_noise(timesteps = 100, mean = 0.5, sd = 0.2, phi = -0.5)
+red <- colored_noise(timesteps = 100, mean = 0.5, sd = 0.2, phi = 0.5)
 ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
 ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
 ```
@@ -46,9 +46,9 @@ In the blue noise plot above, each random number is negatively correlated to the
 To show you how you can use this package to simulate and analyze colored noise, I will present a problem for us to solve. Let's say we want to find out whether our estimates of temporal autocorrelation are biased when the standard deviation of the colored noise is high. First, let's use the `raw_noise` function to generate some colored noise with high variance.
 
 ```{r generate noise}
-red <- colored_noise(timesteps = 100, mu = 0.3, sigma = 1.2, phi = 0.5)
+red <- colored_noise(timesteps = 100, mean = 0.3, sd = 1.2, phi = 0.5)
 red[1:10]
-blue <- colored_noise(timesteps = 100, mu = 0.3, sigma = 1.2, phi = -0.5)
+blue <- colored_noise(timesteps = 100, mean = 0.3, sd = 1.2, phi = -0.5)
 blue[1:10]
 ggplot(data = NULL, aes(x = c(1:100), y = blue)) + geom_line(color="blue") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Blue Noise")
 ggplot(data = NULL, aes(x = c(1:100), y = red)) + geom_line(color="red") + theme_minimal() + theme(axis.title = element_blank()) + ggtitle("Red Noise")
@@ -64,10 +64,10 @@ invoke_map(list(mean, sd, autocorrelation), rep(list(list(blue)), 3))
 The estimates for these seem to be quite accurate. But let's try generating a whole lot of colored noise across a range of variance and color and estimating the autocorrelation of each replicate.
 
 ```{r generate replicates}
-raw_sims <- cross_df(list(timesteps = 20, phi = c(-0.5, 0, 0.5), mu = 0.3, sigma = c(0.5, 0.7, 0.9, 1.1, 1.3, 1.5))) %>% rerun(.n = 30, pmap(., colored_noise))
+raw_sims <- cross_df(list(timesteps = 20, phi = c(-0.5, 0, 0.5), mean = 0.3, sd = c(0.5, 0.7, 0.9, 1.1, 1.3, 1.5))) %>% rerun(.n = 30, pmap(., colored_noise))
 labels <- raw_sims %>% map(1) %>% bind_rows()
 noise <- raw_sims %>% map(2) %>% flatten()
-estimates <- data.frame(mean = map_dbl(noise, mean), sd = map_dbl(noise, sd), autocorrelation = map_dbl(noise, autocorrelation))
+estimates <- data.frame(mu = map_dbl(noise, mean), sigma = map_dbl(noise, sd), autocorrelation = map_dbl(noise, autocorrelation))
 sd_range <- cbind(labels, estimates)
 head(sd_range)
 ```
@@ -75,10 +75,10 @@ head(sd_range)
 We can visualize these results by finding the mean and confidence intervals of the autocorrelation estimates for each combination of variance and noise color, and plotting them out.
 
 ```{r plot CIs}
-sd_range %>% group_by(phi, sigma) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[1]]})(.)),
+sd_range %>% group_by(phi, sd) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[1]]})(.)),
            upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[2]]})(.)),
            mean = mean(.)), .vars = vars(autocorrelation)) -> summ
-ggplot(summ, aes(x = sigma, y = mean)) +
+ggplot(summ, aes(x = sd, y = mean)) +
   geom_pointrange(aes(ymin = lower.ci, ymax = upper.ci, color = factor(phi)), size = 0.8) + 
   geom_hline(yintercept = 0, linetype = 2, color = "#C0C0C0") +
   geom_hline(yintercept = -0.5, linetype = 2, color = "#0033FF") +
@@ -142,9 +142,9 @@ where \phi is the autocorrelation and T is the length of the time series.
 
 ### Correcting the bias
 
-<insert some stuff about how to correct for the bias here>
+Here is what the autocorrelation estimates look like when I turn on the bias correction in the autocorrelation function.
 
-```{r bias correction}
+```{r bias correction, message = F}
 sims %>% map(~group_by(., survPhi, timesteps)) %>% map(~summarize(., acf.surv = autocorrelation(est_surv, biasCorrection = TRUE))) %>% bind_rows() %>% group_by(survPhi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[1]]})(.)),
            upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[2]]})(.)),
            mean = mean(., na.rm = T)), .vars = vars(acf.surv)) -> summ3
@@ -159,3 +159,4 @@ ggplot(summ3, aes(x=timesteps, y=mean)) +
   ggtitle("Bias in estimates of autocorrelation of survival") +
   scale_y_continuous(limits=c(-1.1, 1.2))
 ```
+The estimates are no longer biased for short time series, though they do become less precise with the bias correction.
