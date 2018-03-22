@@ -3,6 +3,6 @@
 .RData
 .Ruserdata
 inst/doc
+src/Makevars
 config.log
 config.status
-src/Makevars

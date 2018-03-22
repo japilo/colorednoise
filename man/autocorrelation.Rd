@@ -22,6 +22,6 @@ the type of temporal autocorrelation that this package simulates). The function 
 NA values in the time series.
 }
 \examples{
-rednoise <- colored_noise(timesteps = 50, mu = 0.5, sigma = 0.2, phi = 0.3)
+rednoise <- colored_noise(timesteps = 50, mean = 0.5, sd = 0.2, phi = 0.3)
 autocorrelation(rednoise)
 }
