@@ -87,14 +87,14 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' @param corrMatrix A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
 //' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
 //' @examples
-//' corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
-//' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), corr)
+//' cov <- matrix(c(0.037, 0.044, -0.048, 0.044, 0.247, -0.008, -0.047, -0.008, 0.074), nrow = 3)
+//' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), cov)
 //' var(test)
 //' library(dplyr)
 //' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 //' @export
 // [[Rcpp::export]]
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVector sd, NumericVector phi, NumericMatrix corrMatrix) {
+NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVector sd, NumericVector phi, NumericMatrix covMatrix) {
   // Convert mean and sd to delta and modified SD
   NumericVector sigma2(sd.length());
   NumericVector delta(mean.length());
@@ -105,9 +105,8 @@ NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVect
     sigma2[i] = sqrt(pow(sd[i], 2.0) * (1 - pow(phi[i], 2.0)));
   }
   // Generate cross-correlated noise with modified SD around zero
-  NumericMatrix cov = wrap(cor2cov(sigma2, corrMatrix));
   NumericVector zeroes(mean.length());
-  NumericMatrix draws = wrap(multi_rnorm(timesteps, zeroes, cov));
+  NumericMatrix draws = wrap(multi_rnorm(timesteps, zeroes, covMatrix));
   // initialize colored noise vectors with corresponding mean and sd
   NumericMatrix noise(timesteps, sd.length());
   for (int i = 0; i < sd.length(); ++i) {

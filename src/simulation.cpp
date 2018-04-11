@@ -140,7 +140,6 @@ Rcpp::List projection(arma::vec initialPop, List noise) {
 
 // Feed in an initial population vector and a matrix of vital rates for each year
 // Get out a matrix with stage-specific population each year
-// [[Rcpp::export]]
 Rcpp::NumericMatrix demo_stochasticity(arma::Row<long> initialPop, List noise) {
   Rcpp::NumericVector sample = noise[1];
   int timesteps = sample.length();

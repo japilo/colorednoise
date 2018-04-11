@@ -80,16 +80,23 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' If you want to run a matrix population model without temporal autocorrelation, simply set all autocorrelation values to zero.
 #' @param initialPop An initial population vector. The length must be the same as the number of classes in the matrices.
 #' @param timesteps The number of timesteps you would like to simulate the population.
-#' @param corrMatrix Optional: add a correlation matrix describing within-year correlations between vital rates. The vital rates must be
-#' in the same order as they are in the data frame format above: a Leslie matrix turned into a vector row-wise.
+#' @param covMatrix Optional: Add a covariance matrix describing within-year covariances between matrix elements. The matrix elements must be
+#' in the same order as they are in the data frame format above: a Leslie matrix turned into a vector row-wise. There should be as many
+#' columns as matrix elements.
 #' @param colNames Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
 #' named 'mean', 'sd', and 'autocorrelation', provide their names here in a character vector, e.g.,
 #' c(mean = 'Mean', sd = 'Standard Deviation', autocorrelation = 'phi')
-#' @param matrixStructure By default, the function assumes that the first row of the matrix gives fecundities while
+#' @param matrixStructure Optional: By default, the function assumes that the first row of the matrix gives fecundities while
 #' the rest of the matrix gives transition or survival probabilities. However, these assumptions do not apply to
 #' many plant matrices. If your matrix has transition probabilities in the first row or fecundities beyond the first row
 #' (e.g., clonal reproduction), provide a character matrix here with the same dimensions as your matrix that gives in
 #' strings whether each element is 'fecundity' or 'transition'.
+#' @param repeatElements Optional: Sometimes not all matrix elements can be measured, and some transitions or fertilities
+#' are generalized across classes. If you have any matrix elements that are copies of other matrix elements (e.g., stage 3
+#' is assumed to have the same fertility as stage 4) indicate them here with a matrix of \emph{rowwise} (not column-wise)
+#' indices that show which elements are repeats and which are unique. For example in a 2x2 matrix where both classes are
+#' assumed to have the same fertility, input `matrix(c(1, 1, 3, 4), byrow = T, ncol = 2)`. If you indicate repeat elements
+#' and you include a covariance matrix, the covariance matrix must only have as many columns as \emph{unique matrix elements}.
 #' @return A data frame with n + 2 columns, where n is the number of stages in the matrix. One column indicates the timestep,
 #' there is one column with the population size for each stage, and one column for total population size.
 #' @examples
@@ -100,9 +107,10 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' sim <- matrix_model(list(meanMat, sdMat, phiMat), initialPop, 50)
 #' head(sim)
 #' @export
-matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL,
-    colNames = NULL, matrixStructure = NULL) {
+matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
+    colNames = NULL, matrixStructure = NULL, repeatElements = NULL) {
     stages <- length(initialPop)
+    # Regularize all valid data inputs to the same format
     if (is.data.frame(data) == T) {
         if (is.null(colNames) == F) {
             data <- data[, colNames] %>% rename(!(!(!colNames)))
@@ -136,38 +144,51 @@ matrix_model <- function(data, initialPop, timesteps, corrMatrix = NULL,
     } else {
         stop("Invalid data type. Must be a list of three matrices or a data frame with three columns.")
     }
+    # Generate neutral / null versions of matrixStructure, repeatElements, and
+    # covMatrix if not specified in function input
     if (is.null(matrixStructure) == T) {
-        df <- dat %>% cbind(dist = c(rep("log", stages), rep("qlogis",
-            nrow(dat) - stages))) %>% mutate(dist = as.character(dist))
-    } else if (all(dim(matrixStructure) == c(stages, stages)) == T) {
-        stopifnot(matrixStructure == c("fecundity", "transition"))
-        dists <- ifelse(as.vector(t(matrixStructure)) == "fecundity",
-            "log", "qlogis")
-        df <- dat %>% cbind(dist = dists) %>% mutate(dist = as.character(dist))
-    } else {
-        stop("Either your initial population vector has an invalid length or your matrixStructure is invalid")
+      matrixStructure <- matrix(
+        c(rep("fecundity", stages), rep("transition", stages^2-stages)),
+        byrow = T, ncol = stages)
     }
-    if (is.null(corrMatrix) == T) {
-        elements <- df %>% rowwise() %>% mutate(mean.trans = ifelse(mean ==
-            0, 0, invoke(dist, list(mean))), sd.trans = ifelse(sd ==
-            0, 0, variancefix(mean, sd, dist)), noise = list(colored_noise(timesteps,
-            mean.trans, sd.trans, autocorrelation)), natural.noise = ifelse(all(noise ==
-            0) == T, list(noise), ifelse(dist == "log", list(exp(noise)),
-            list(plogis(noise)))))
-    } else if (is.matrix(corrMatrix) == T) {
-        elements <- df %>% rowwise() %>% mutate(mean.trans = invoke(dist,
-            list(mean)), sd.trans = variancefix(mean, sd, dist))
-        elements$noise <- colored_multi_rnorm(100, elements$mean.trans,
-            elements$sd.trans, elements$autocorrelation, corrMatrix) %>%
-            split(rep(1:ncol(.), each = nrow(.)))
-        elements <- elements %>% mutate(natural.noise = ifelse(dist ==
-            "log", list(exp(noise)), list(plogis(noise))))
-    } else {
-        stop("Correlation matrix must be in matrix format")
+    dists <- ifelse(as.vector(t(matrixStructure)) == "fecundity",
+                    "log", "qlogis")
+    dat <- dat %>% mutate(dist = dists, noise = NA)
+    if (is.null(repeatElements) == T) {
+      repeatElements <- matrix(seq(1:stages^2), ncol = stages, byrow = T)
     }
-      population <- projection(initialPop, elements$natural.noise)
-      population %>% map(as_tibble) %>% bind_rows() %>% by_row(.,
-          sum, .collate = "cols", .to = "total") %>% mutate(timestep = 1:n()) %>%
-          select(timestep, everything()) %>% set_names(c("timestep",
-          paste0("stage", 1:stages), "total"))
+    repeats <- repeatElements == matrix(seq(1:stages^2), ncol = stages, byrow = T)
+    if (is.null(covMatrix) == T) {
+      covMatrix <- cor2cov(sdMat[which(repeats)], diag(sum(repeats)))
+    }
+    # Create version of data that can be used to generate colored noise
+    inputs <- dat %>% slice(which(t(repeats))) %>% rowwise() %>% mutate(
+        mean.trans = ifelse(mean == 0, 0, invoke(dist, list(mean))),
+        sd.trans = ifelse(sd == 0, 0, variancefix(mean, sd, dist))
+      )
+    # Create colored noise, discard if invalid matrix
+    repeat {
+      inputs$noise <- colored_multi_rnorm(100, inputs$mean.trans, inputs$sd.trans,
+                                      inputs$autocorrelation, cov) %>% split(col(.))
+      dat$noise[which(repeats)] <- inputs$noise
+      dat$noise[which(!repeats)] <- inputs$noise[repeatElements[which(!repeats)]]
+      # checking for >1 probability
+      dat <- dat %>% rowwise() %>% mutate(
+        natural.noise = ifelse(all(noise == 0) == T, list(noise),
+                               ifelse(dist == "log", list(exp(noise)),
+                                      list(plogis(noise))))
+        )
+      matrices <- map(1:100, function(x) {
+        matrix(map_dbl(dat$natural.noise, x), ncol = 2)
+      })
+      matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
+        map(colSums) %>% map_lgl(function(x) all(x <= 1)) -> check
+      if (all(check == T)) {
+        break
+      }
+    }
+    pop <- projection(initialPop, dat$natural.noise)
+    pop %>% map(as_tibble) %>% bind_rows() %>%
+      by_row(., sum, .collate = "cols", .to = "total") %>% mutate(timestep = 1:n()) %>%
+      select(timestep, everything()) %>% set_names(c("timestep", paste0("stage", 1:stages), "total"))
 }

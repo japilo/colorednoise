@@ -68,14 +68,14 @@ cor2cov <- function(sigma, corrMatrix) {
 #' @param corrMatrix A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
 #' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
 #' @examples
-#' corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
-#' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), corr)
+#' cov <- matrix(c(0.037, 0.044, -0.048, 0.044, 0.247, -0.008, -0.047, -0.008, 0.074), nrow = 3)
+#' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), cov)
 #' var(test)
 #' library(dplyr)
 #' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 #' @export
-colored_multi_rnorm <- function(timesteps, mean, sd, phi, corrMatrix) {
-    .Call(`_colorednoise_colored_multi_rnorm`, timesteps, mean, sd, phi, corrMatrix)
+colored_multi_rnorm <- function(timesteps, mean, sd, phi, covMatrix) {
+    .Call(`_colorednoise_colored_multi_rnorm`, timesteps, mean, sd, phi, covMatrix)
 }
 
 variancefix <- function(mu, sigma, dist) {
@@ -126,9 +126,5 @@ unstructured_pop <- function(start, timesteps, survPhi, fecundPhi, survMean, sur
 
 projection <- function(initialPop, noise) {
     .Call(`_colorednoise_projection`, initialPop, noise)
-}
-
-demo_stochasticity <- function(initialPop, noise) {
-    .Call(`_colorednoise_demo_stochasticity`, initialPop, noise)
 }
 
