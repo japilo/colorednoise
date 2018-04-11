@@ -169,7 +169,7 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     # Create colored noise, discard if invalid matrix
     repeat {
       inputs$noise <- colored_multi_rnorm(100, inputs$mean.trans, inputs$sd.trans,
-                                      inputs$autocorrelation, cov) %>% split(col(.))
+                                      inputs$autocorrelation, covMatrix) %>% split(col(.))
       dat$noise[which(repeats)] <- inputs$noise
       dat$noise[which(!repeats)] <- inputs$noise[repeatElements[which(!repeats)]]
       # checking for >1 probability
@@ -179,7 +179,7 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
                                       list(plogis(noise))))
         )
       matrices <- map(1:100, function(x) {
-        matrix(map_dbl(dat$natural.noise, x), ncol = 2)
+        matrix(map_dbl(dat$natural.noise, x), byrow = T, ncol = 2)
       })
       matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
         map(colSums) %>% map_lgl(function(x) all(x <= 1)) -> check
