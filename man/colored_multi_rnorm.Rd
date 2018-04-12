@@ -16,7 +16,7 @@ per timestep) you want.}
 
 \item{phi}{A vector giving the temporal autocorrelation of each variable.}
 
-\item{corrMatrix}{A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.}
+\item{covMatrix}{A valid covariance matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.}
 }
 \value{
 A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.

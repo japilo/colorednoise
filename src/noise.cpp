@@ -84,7 +84,7 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' @param mean A vector giving the mean of each variable.
 //' @param sd A vector giving the standard deviation of each variable.
 //' @param phi A vector giving the temporal autocorrelation of each variable.
-//' @param corrMatrix A valid correlation matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
+//' @param covMatrix A valid covariance matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
 //' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
 //' @examples
 //' cov <- matrix(c(0.037, 0.044, -0.048, 0.044, 0.247, -0.008, -0.047, -0.008, 0.074), nrow = 3)
