@@ -82,7 +82,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' @param timesteps The number of timesteps you would like to simulate the population.
 #' @param covMatrix Optional: Add a covariance matrix describing within-year covariances between matrix elements. The matrix elements must be
 #' in the same order as they are in the data frame format above: a Leslie matrix turned into a vector row-wise. There should be as many
-#' columns as matrix elements.
+#' columns as matrix elements, excluding repeat elements (see below) or structural zeros.
 #' @param colNames Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
 #' named 'mean', 'sd', and 'autocorrelation', provide their names here in a character vector, e.g.,
 #' c(mean = 'Mean', sd = 'Standard Deviation', autocorrelation = 'phi')
@@ -97,6 +97,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' indices that show which elements are repeats and which are unique. For example in a 2x2 matrix where both classes are
 #' assumed to have the same fertility, input `matrix(c(1, 1, 3, 4), byrow = T, ncol = 2)`. If you indicate repeat elements
 #' and you include a covariance matrix, the covariance matrix must only have as many columns as \emph{unique matrix elements}.
+#' Structural zeros should \emph{not} be included here as repeats, as they are automatically detected in the function.
 #' @return A data frame with n + 2 columns, where n is the number of stages in the matrix. One column indicates the timestep,
 #' there is one column with the population size for each stage, and one column for total population size.
 #' @examples
@@ -153,7 +154,7 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     }
     dists <- ifelse(as.vector(t(matrixStructure)) == "fecundity",
                     "log", "qlogis")
-    dat <- dat %>% mutate(dist = dists, noise = NA)
+    dat <- dat %>% mutate(dist = dists, noise = NA, zero = mean==0&sd==0)
     if (is.null(repeatElements) == T) {
       repeatElements <- matrix(seq(1:stages^2), ncol = stages, byrow = T)
     }
@@ -162,24 +163,26 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
       covMatrix <- cor2cov(dat$sd[which(repeats)], diag(sum(repeats)))
     }
     # Create version of data that can be used to generate colored noise
-    inputs <- dat %>% slice(which(t(repeats))) %>% rowwise() %>% mutate(
+    inputs <- dat %>% slice(which(t(repeats))) %>% filter(zero == F) %>%
+      rowwise() %>% mutate(
         mean.trans = ifelse(mean == 0, 0, invoke(dist, list(mean))),
         sd.trans = ifelse(sd == 0, 0, variancefix(mean, sd, dist))
       )
     # Create colored noise, discard if invalid matrix
     repeat {
-      inputs$noise <- colored_multi_rnorm(100, inputs$mean.trans, inputs$sd.trans,
+      inputs$noise <- colored_multi_rnorm(timesteps, inputs$mean.trans, inputs$sd.trans,
                                       inputs$autocorrelation, covMatrix) %>% split(col(.))
-      dat$noise[which(repeats)] <- inputs$noise
-      dat$noise[which(!repeats)] <- inputs$noise[repeatElements[which(!repeats)]]
+      dat$noise[which(repeats)&dat$zero==F] <- inputs$noise
+      dat$noise[which(!repeats)&dat$zero==F] <- inputs$noise[repeatElements[which(!repeats)]]
+      dat$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
       # checking for >1 probability
       dat <- dat %>% rowwise() %>% mutate(
-        natural.noise = ifelse(all(noise == 0) == T, list(noise),
+        natural.noise = ifelse(zero == T, list(noise),
                                ifelse(dist == "log", list(exp(noise)),
                                       list(plogis(noise))))
         )
-      matrices <- map(1:100, function(x) {
-        matrix(map_dbl(dat$natural.noise, x), byrow = T, ncol = 2)
+      matrices <- map(1:timesteps, function(x) {
+        matrix(map_dbl(dat$natural.noise, x), byrow = T, ncol = stages)
       })
       matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
         map(colSums) %>% map_lgl(function(x) all(x <= 1)) -> check

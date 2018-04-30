@@ -19,8 +19,8 @@ autocorrelation <- function(x, biasCorrection = TRUE) {
     z <- x[is.na(x)==F]
     y <- z[is.nan(z)==F]
     r <- acf(y, plot = F)[[1]][2]
-    r1 <- acf(y[1:round(length(y)/2)], plot = F)[[1]][2]
-    r2 <- acf(y[(round(length(y)/2)+1):length(y)], plot = F)[[1]][2]
+    r1 <- acf(y[1:round(length(y)/2)], plot = F, na.action = na.omit)[[1]][2]
+    r2 <- acf(y[(round(length(y)/2)+1):length(y)], plot = F, na.action = na.omit)[[1]][2]
     2*r - 0.5*(r1 + r2)
   } else if (biasCorrection == FALSE) {
     acf(x, plot = F, na.action = na.omit)[[1]][2]}
