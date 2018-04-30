@@ -172,8 +172,8 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     repeat {
       inputs$noise <- colored_multi_rnorm(timesteps, inputs$mean.trans, inputs$sd.trans,
                                       inputs$autocorrelation, covMatrix) %>% split(col(.))
-      dat$noise[which(repeats)&dat$zero==F] <- inputs$noise
-      dat$noise[which(!repeats)&dat$zero==F] <- inputs$noise[repeatElements[which(!repeats)]]
+      dat$noise[as.vector(t(repeats))&dat$zero==F] <- inputs$noise
+      dat$noise[as.vector(t(!repeats))&dat$zero==F] <- inputs$noise[repeatElements[which(!repeats)]]
       dat$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
       # checking for >1 probability
       dat <- dat %>% rowwise() %>% mutate(
