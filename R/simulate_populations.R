@@ -159,15 +159,15 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
       repeatElements <- matrix(seq(1:stages^2), ncol = stages, byrow = T)
     }
     repeats <- repeatElements == matrix(seq(1:stages^2), ncol = stages, byrow = T)
-    if (is.null(covMatrix) == T) {
-      covMatrix <- cor2cov(dat$sd[which(repeats)], diag(sum(repeats)))
-    }
     # Create version of data that can be used to generate colored noise
     inputs <- dat %>% slice(which(t(repeats))) %>% filter(zero == F) %>%
       rowwise() %>% mutate(
         mean.trans = ifelse(mean == 0, 0, invoke(dist, list(mean))),
         sd.trans = ifelse(sd == 0, 0, variancefix(mean, sd, dist))
       )
+    if (is.null(covMatrix) == T) {
+      covMatrix <- cor2cov(inputs$sd, diag(nrow(inputs)))
+    }
     # Create colored noise, discard if invalid matrix
     repeat {
       inputs$noise <- colored_multi_rnorm(timesteps, inputs$mean.trans, inputs$sd.trans,
