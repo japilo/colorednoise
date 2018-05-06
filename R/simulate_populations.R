@@ -154,10 +154,11 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     }
     dists <- ifelse(as.vector(t(matrixStructure)) == "fecundity",
                     "log", "qlogis")
-    dat <- dat %>% mutate(dist = dists, noise = NA, zero = mean==0&sd==0)
     if (is.null(repeatElements) == T) {
       repeatElements <- matrix(seq(1:stages^2), ncol = stages, byrow = T)
     }
+    dat <- dat %>% mutate(dist = dists, zero = mean==0&sd==0,
+                          ref = as.vector(t(repeatElements)))
     repeats <- repeatElements == matrix(seq(1:stages^2), ncol = stages, byrow = T)
     # Create version of data that can be used to generate colored noise
     inputs <- dat %>% slice(which(t(repeats))) %>% filter(zero == F) %>%
@@ -172,17 +173,16 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     repeat {
       inputs$noise <- colored_multi_rnorm(timesteps, inputs$mean.trans, inputs$sd.trans,
                                       inputs$autocorrelation, covMatrix) %>% split(col(.))
-      dat$noise[as.vector(t(repeats))&dat$zero==F] <- inputs$noise
-      dat$noise[as.vector(t(!repeats))&dat$zero==F] <- inputs$noise[repeatElements[which(!repeats)]]
-      dat$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
+      result <- left_join(dat, inputs, by = c("mean", "sd", "autocorrelation", "dist", "zero", "ref"))
+      result$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
       # checking for >1 probability
-      dat <- dat %>% rowwise() %>% mutate(
+      result <- result %>% rowwise() %>% mutate(
         natural.noise = ifelse(zero == T, list(noise),
                                ifelse(dist == "log", list(exp(noise)),
                                       list(plogis(noise))))
         )
       matrices <- map(1:timesteps, function(x) {
-        matrix(map_dbl(dat$natural.noise, x), byrow = T, ncol = stages)
+        matrix(map_dbl(result$natural.noise, x), byrow = T, ncol = stages)
       })
       matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
         map(colSums) %>% map_lgl(function(x) all(x <= 1)) -> check
@@ -190,7 +190,7 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
         break
       }
     }
-    pop <- projection(initialPop, dat$natural.noise)
+    pop <- projection(initialPop, result$natural.noise)
     pop %>% map(as_tibble) %>% bind_rows() %>%
       by_row(., sum, .collate = "cols", .to = "total") %>% mutate(timestep = 1:n()) %>%
       select(timestep, everything()) %>% set_names(c("timestep", paste0("stage", 1:stages), "total"))
