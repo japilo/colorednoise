@@ -2,7 +2,7 @@ Package: colorednoise
 Type: Package
 Title: Simulate Temporally Autocorrelated Populations
 Version: 1.0.1
-Date: 2018-04-12
+Date: 2018-05-20
 Author: Julia Pilowsky
 Maintainer: Julia Pilowsky <jap2178@caa.columbia.edu>
 Description: Temporally autocorrelated populations are correlated in their vital rates (growth, death, etc.) from year to year. It is very common for populations, whether they be bacteria, plants, or humans, to be temporally autocorrelated. This poses a challenge for stochastic population modeling, because a temporally correlated population will behave differently from an uncorrelated one.

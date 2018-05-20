@@ -24,7 +24,7 @@ If you want to run a matrix population model without temporal autocorrelation, s
 
 \item{covMatrix}{Optional: Add a covariance matrix describing within-year covariances between matrix elements. The matrix elements must be
 in the same order as they are in the data frame format above: a Leslie matrix turned into a vector row-wise. There should be as many
-columns as matrix elements.}
+columns as matrix elements, excluding repeat elements (see below) or structural zeros.}
 
 \item{colNames}{Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
 named 'mean', 'sd', and 'autocorrelation', provide their names here in a character vector, e.g.,
@@ -41,7 +41,8 @@ are generalized across classes. If you have any matrix elements that are copies 
 is assumed to have the same fertility as stage 4) indicate them here with a matrix of \emph{rowwise} (not column-wise)
 indices that show which elements are repeats and which are unique. For example in a 2x2 matrix where both classes are
 assumed to have the same fertility, input `matrix(c(1, 1, 3, 4), byrow = T, ncol = 2)`. If you indicate repeat elements
-and you include a covariance matrix, the covariance matrix must only have as many columns as \emph{unique matrix elements}.}
+and you include a covariance matrix, the covariance matrix must only have as many columns as \emph{unique matrix elements}.
+Structural zeros should \emph{not} be included here as repeats, as they are automatically detected in the function.}
 }
 \value{
 A data frame with n + 2 columns, where n is the number of stages in the matrix. One column indicates the timestep,
