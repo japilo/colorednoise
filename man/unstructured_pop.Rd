@@ -44,7 +44,9 @@ whose survival and fertility is stochastic, but also correlated to the
 survival and fertility in the previous year, respectively. The assumptions of the
 simulation are that the population is asexually reproducing or female-only,
 survival and fertility are the same at all ages / stages,
-and that individuals continue to be reproductively capable until they die.
+and that individuals continue to be reproductively capable until they die. The function
+includes demographic stochasticity as well as environmental stochasticity, and
+does not support density dependence at this time.
 }
 \details{
 Be advised that not all combinations of values will work. If you set survival and

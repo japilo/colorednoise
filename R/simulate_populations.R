@@ -85,7 +85,7 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' columns as matrix elements, excluding repeat elements (see below) or structural zeros.
 #' @param colNames Optional: If the mean, sd, and autocorrelation columns of your data frame input are not
 #' named 'mean', 'sd', and 'autocorrelation', provide their names here in a character vector, e.g.,
-#' c(mean = 'Mean', sd = 'Standard Deviation', autocorrelation = 'phi')
+#' `c(mean = 'Mean', sd = 'Standard Deviation', autocorrelation = 'phi')`
 #' @param matrixStructure Optional: By default, the function assumes that the first row of the matrix gives fecundities while
 #' the rest of the matrix gives transition or survival probabilities. However, these assumptions do not apply to
 #' many plant matrices. If your matrix has transition probabilities in the first row or fecundities beyond the first row
