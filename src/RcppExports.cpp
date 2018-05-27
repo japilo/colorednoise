@@ -7,7 +7,7 @@
 using namespace Rcpp;
 
 // colored_noise
-NumericVector colored_noise(int timesteps, double mean, double sd, double phi);
+Rcpp::NumericVector colored_noise(int timesteps, double mean, double sd, double phi);
 RcppExport SEXP _colorednoise_colored_noise(SEXP timestepsSEXP, SEXP meanSEXP, SEXP sdSEXP, SEXP phiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -21,41 +21,41 @@ BEGIN_RCPP
 END_RCPP
 }
 // multi_rnorm
-arma::mat multi_rnorm(int n, NumericVector mean, NumericMatrix sd);
+arma::mat multi_rnorm(int n, Rcpp::NumericVector mean, Rcpp::NumericMatrix sd);
 RcppExport SEXP _colorednoise_multi_rnorm(SEXP nSEXP, SEXP meanSEXP, SEXP sdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type sd(sdSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type sd(sdSEXP);
     rcpp_result_gen = Rcpp::wrap(multi_rnorm(n, mean, sd));
     return rcpp_result_gen;
 END_RCPP
 }
 // cor2cov
-arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix);
+arma::mat cor2cov(Rcpp::NumericVector sigma, Rcpp::NumericMatrix corrMatrix);
 RcppExport SEXP _colorednoise_cor2cov(SEXP sigmaSEXP, SEXP corrMatrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type corrMatrix(corrMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type corrMatrix(corrMatrixSEXP);
     rcpp_result_gen = Rcpp::wrap(cor2cov(sigma, corrMatrix));
     return rcpp_result_gen;
 END_RCPP
 }
 // colored_multi_rnorm
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVector sd, NumericVector phi, NumericMatrix covMatrix);
+Rcpp::NumericMatrix colored_multi_rnorm(int timesteps, Rcpp::NumericVector mean, Rcpp::NumericVector sd, Rcpp::NumericVector phi, Rcpp::NumericMatrix covMatrix);
 RcppExport SEXP _colorednoise_colored_multi_rnorm(SEXP timestepsSEXP, SEXP meanSEXP, SEXP sdSEXP, SEXP phiSEXP, SEXP covMatrixSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< int >::type timesteps(timestepsSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type mean(meanSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type sd(sdSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type phi(phiSEXP);
-    Rcpp::traits::input_parameter< NumericMatrix >::type covMatrix(covMatrixSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type mean(meanSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type sd(sdSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type phi(phiSEXP);
+    Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type covMatrix(covMatrixSEXP);
     rcpp_result_gen = Rcpp::wrap(colored_multi_rnorm(timesteps, mean, sd, phi, covMatrix));
     return rcpp_result_gen;
 END_RCPP
@@ -74,7 +74,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // unstructured_pop
-DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd);
+Rcpp::DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd);
 RcppExport SEXP _colorednoise_unstructured_pop(SEXP startSEXP, SEXP timestepsSEXP, SEXP survPhiSEXP, SEXP fecundPhiSEXP, SEXP survMeanSEXP, SEXP survSdSEXP, SEXP fecundMeanSEXP, SEXP fecundSdSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -92,13 +92,13 @@ BEGIN_RCPP
 END_RCPP
 }
 // projection
-Rcpp::List projection(arma::vec initialPop, List noise);
+Rcpp::List projection(arma::vec initialPop, Rcpp::List noise);
 RcppExport SEXP _colorednoise_projection(SEXP initialPopSEXP, SEXP noiseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type initialPop(initialPopSEXP);
-    Rcpp::traits::input_parameter< List >::type noise(noiseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type noise(noiseSEXP);
     rcpp_result_gen = Rcpp::wrap(projection(initialPop, noise));
     return rcpp_result_gen;
 END_RCPP

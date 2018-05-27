@@ -5,6 +5,3 @@
 ^\.travis\.yml$
 ^/\.gitattributes$
 ^codecov\.yml$
-^config\.log$
-^config\.status$
-^src\/Makevars$

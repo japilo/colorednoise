@@ -12,7 +12,7 @@
 #' @import purrr
 #' @import dplyr
 #' @importFrom stats sd acf na.omit plogis
-#' @importFrom purrrlyr by_row
+#' @import tidyr
 NULL
 
 ## quiets concerns of R CMD check re: the .'s that appear in

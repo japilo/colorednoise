@@ -5,10 +5,17 @@ r:
   - oldrel
   - release
   - devel
-compiler: gcc
+
+os:
+  - linux
+  - osx
+
+compiler:
+  - gcc
+  - clang
 
 install:
-  - R -e 'install.packages(c("dplyr", "purrr", "purrrlyr", "Rcpp", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr"))'
+  - R -e 'install.packages(c("dplyr", "purrr", "tidyr", "Rcpp", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr"))'
 
 after_success:
 - Rscript -e 'covr::codecov()'

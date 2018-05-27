@@ -192,6 +192,6 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     }
     pop <- projection(initialPop, result$natural.noise)
     pop %>% map(as_tibble) %>% bind_rows() %>%
-      by_row(., sum, .collate = "cols", .to = "total") %>% mutate(timestep = 1:n()) %>%
-      select(timestep, everything()) %>% set_names(c("timestep", paste0("stage", 1:stages), "total"))
+      group_by(row_number()) %>% nest() %>% mutate(total = map(data, sum)) %>%
+      unnest() %>% set_names(c("timestep", "total", paste0("stage", 1:stages)))
 }

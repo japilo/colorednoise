@@ -1,7 +1,5 @@
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
-using namespace Rcpp;
-using namespace arma;
 
 //' Generate Autocorrelated Noise
 //'
@@ -21,10 +19,10 @@ using namespace arma;
 //' rednoise
 //' @export
 // [[Rcpp::export]]
-NumericVector colored_noise(int timesteps, double mean, double sd, double phi) {
+Rcpp::NumericVector colored_noise(int timesteps, double mean, double sd, double phi) {
   double delta = mean * (1 - phi);
   double variance = pow(sd, 2.0) * (1 - pow(phi, 2.0));
-  NumericVector noise(timesteps);
+  Rcpp::NumericVector noise(timesteps);
   noise[0] = R::rnorm(mean, sd);
   for(int i = 0; i < timesteps-1; ++i) {
     noise[i+1] = delta + phi*noise[i] + R::rnorm(0, sqrt(variance));
@@ -47,9 +45,9 @@ NumericVector colored_noise(int timesteps, double mean, double sd, double phi) {
 //' var(mat)
 //' @export
 // [[Rcpp::export]]
-arma::mat multi_rnorm(int n, NumericVector mean, NumericMatrix sd) {
-  arma::vec mu2 = as<arma::vec>(mean);
-  arma::mat sigma2 = as<arma::mat>(sd);
+arma::mat multi_rnorm(int n, Rcpp::NumericVector mean, Rcpp::NumericMatrix sd) {
+  arma::vec mu2 = Rcpp::as<arma::vec>(mean);
+  arma::mat sigma2 = Rcpp::as<arma::mat>(sd);
   int ncols = sigma2.n_cols;
   arma::mat Y = arma::randn(n, ncols);
   return arma::repmat(mu2, 1, n).t() + Y * arma::chol(sigma2);
@@ -68,9 +66,9 @@ arma::mat multi_rnorm(int n, NumericVector mean, NumericMatrix sd) {
 //' cov2cor(covar)
 //' @export
 // [[Rcpp::export]]
-arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
-  arma::vec sigmas2 = as<arma::vec>(sigma);
-  arma::mat corrs = as<arma::mat>(corrMatrix);
+arma::mat cor2cov(Rcpp::NumericVector sigma, Rcpp::NumericMatrix corrMatrix) {
+  arma::vec sigmas2 = Rcpp::as<arma::vec>(sigma);
+  arma::mat corrs = Rcpp::as<arma::mat>(corrMatrix);
   arma::mat m1 = diagmat(sigmas2);
   return m1 * corrs * m1;
 }
@@ -94,10 +92,10 @@ arma::mat cor2cov(NumericVector sigma, NumericMatrix corrMatrix) {
 //' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
 //' @export
 // [[Rcpp::export]]
-NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVector sd, NumericVector phi, NumericMatrix covMatrix) {
+Rcpp::NumericMatrix colored_multi_rnorm(int timesteps, Rcpp::NumericVector mean, Rcpp::NumericVector sd, Rcpp::NumericVector phi, Rcpp::NumericMatrix covMatrix) {
   // Convert mean and sd to delta and modified SD
-  NumericVector sigma2(sd.length());
-  NumericVector delta(mean.length());
+  Rcpp::NumericVector sigma2(sd.length());
+  Rcpp::NumericVector delta(mean.length());
   for (int i = 0; i < mean.length(); ++i) {
     delta[i] = mean[i] * (1 - phi[i]);
   }
@@ -105,10 +103,10 @@ NumericMatrix colored_multi_rnorm(int timesteps, NumericVector mean, NumericVect
     sigma2[i] = sqrt(pow(sd[i], 2.0) * (1 - pow(phi[i], 2.0)));
   }
   // Generate cross-correlated noise with modified SD around zero
-  NumericVector zeroes(mean.length());
-  NumericMatrix draws = wrap(multi_rnorm(timesteps, zeroes, covMatrix));
+  Rcpp::NumericVector zeroes(mean.length());
+  Rcpp::NumericMatrix draws = Rcpp::wrap(multi_rnorm(timesteps, zeroes, covMatrix));
   // initialize colored noise vectors with corresponding mean and sd
-  NumericMatrix noise(timesteps, sd.length());
+  Rcpp::NumericMatrix noise(timesteps, sd.length());
   for (int i = 0; i < sd.length(); ++i) {
     noise(0,i) = R::rnorm(mean[i], sd[i]);
   }

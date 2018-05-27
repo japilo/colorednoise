@@ -1,8 +1,6 @@
 #include <RcppArmadillo.h>
 #include "noise.h"
 // [[Rcpp::depends(RcppArmadillo)]]
-using namespace Rcpp;
-using namespace arma;
 
 // Variance Fix
 //
@@ -22,7 +20,7 @@ double variancefix(double mu, double sigma, std::string dist){
     double out = sigma*(1/exp(mn));
     return out;
   } else {
-    stop("Inadmissible value");
+    Rcpp::stop("Inadmissible value");
   }
 }
 
@@ -67,7 +65,7 @@ double variancefix(double mu, double sigma, std::string dist){
 //' head(series1)
 //' @export
 // [[Rcpp::export]]
-DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd) {
+Rcpp::DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd) {
   // These lines generate the temporally autocorrelated random numbers
   double survmu = R::qlogis(survMean, 0, 1, true, false);
   double survsigma = variancefix(survMean, survSd, "qlogis");
@@ -94,12 +92,12 @@ DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecu
       newborns[i] = sum(Rcpp::rpois(survivors[i], Ft[i]));
     }
   }
- IntegerVector timestep = seq_len(timesteps);
-  DataFrame output = DataFrame::create(
-    Named("timestep") = timestep,
-    _("newborns") = wrap(newborns),
-    _("survivors") = wrap(survivors),
-    Named("population") = wrap(population)
+ Rcpp::IntegerVector timestep = Rcpp::seq_len(timesteps);
+  Rcpp::DataFrame output = Rcpp::DataFrame::create(
+    Rcpp::Named("timestep") = timestep,
+    Rcpp::Named("newborns") = Rcpp::wrap(newborns),
+    Rcpp::Named("survivors") = Rcpp::wrap(survivors),
+    Rcpp::Named("population") = Rcpp::wrap(population)
   );
   return output;
 }
@@ -109,29 +107,29 @@ DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecu
 // Feed in an initial population vector and a list of values for each matrix vital rate
 // in each timestep. Get out a list of matrices with the population for each timestep
 // [[Rcpp::export]]
-Rcpp::List projection(arma::vec initialPop, List noise) {
-  List vectors(noise.length());
+Rcpp::List projection(arma::vec initialPop, Rcpp::List noise) {
+  Rcpp::List vectors(noise.length());
   for (int i = 0; i < noise.length(); ++i) {
-    vectors[i] = as<vec>(noise[i]);
+    vectors[i] = Rcpp::as<arma::vec>(noise[i]);
   }
-  vec sample = vectors[1];
+  arma::vec sample = vectors[1];
   int timesteps = sample.size();
-  List matrices(timesteps);
+  Rcpp::List matrices(timesteps);
   for (int i = 0; i < timesteps; ++i) {
     arma::vec timestep(vectors.length());
     for (int j = 0; j < vectors.length(); ++j) {
-      vec v = vectors[j];
+      arma::vec v = vectors[j];
       timestep(j) = v[i];
     }
-    mat projection = mat(timestep);
+    arma::mat projection = arma::mat(timestep);
     projection.reshape(initialPop.size(), initialPop.size());
     matrices[i] = projection.t();
   }
-  List population(timesteps);
+  Rcpp::List population(timesteps);
   population[0] = initialPop;
   for (int i = 0; i < timesteps-1; ++i) {
-    rowvec pop = population[i];
-    mat proj = matrices[i];
+    arma::rowvec pop = population[i];
+    arma::mat proj = matrices[i];
     population[i + 1] = pop*proj;
   }
   population[0] = initialPop.t();
@@ -142,7 +140,7 @@ Rcpp::List projection(arma::vec initialPop, List noise) {
 
 // Feed in an initial population vector and a matrix of vital rates for each year
 // Get out a matrix with stage-specific population each year
-Rcpp::NumericMatrix demo_stochasticity(arma::Row<long> initialPop, List noise) {
+Rcpp::NumericMatrix demo_stochasticity(arma::Row<long> initialPop, Rcpp::List noise) {
   Rcpp::NumericVector sample = noise[1];
   int timesteps = sample.length();
   int stages = initialPop.size();
@@ -171,5 +169,5 @@ Rcpp::NumericMatrix demo_stochasticity(arma::Row<long> initialPop, List noise) {
       }
     }
   }
-  return wrap(population);
+  return Rcpp::wrap(population);
 }
