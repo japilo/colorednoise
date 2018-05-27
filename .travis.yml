@@ -1,18 +1,19 @@
 language: r
 cache: packages
 sudo: false
+
 r:
-  - oldrel
   - release
   - devel
-
 os:
   - linux
   - osx
-
 compiler:
-  - gcc
   - clang
+  - gcc
+
+before_install:
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install llvm; fi
 
 install:
   - R -e 'install.packages(c("dplyr", "purrr", "tidyr", "Rcpp", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr"))'
