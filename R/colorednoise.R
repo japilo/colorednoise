@@ -2,9 +2,7 @@
 #'
 #' Simulate Temporally Autocorrelated Populations
 #'
-#' See the README on
-#' \href{https://cran.r-project.org/web/packages/colorednoise/readme/README.html}{CRAN}
-#' or \href{https://github.com/japilo/colorednoise#readme}{GitHub}
+#' See the README on \href{https://github.com/japilo/colorednoise#readme}{GitHub}
 #'
 #' @docType package
 #' @name colorednoise
