@@ -7,13 +7,9 @@ r:
   - devel
 os:
   - linux
-  - osx
-compiler:
-  - clang
-  - gcc
 
-before_install:
-  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then brew install llvm; fi
+compiler:
+  - gcc
 
 install:
   - R -e 'install.packages(c("dplyr", "purrr", "tidyr", "Rcpp", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr"))'
