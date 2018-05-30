@@ -108,32 +108,16 @@ Rcpp::DataFrame unstructured_pop(int start, int timesteps, double survPhi, doubl
 // in each timestep. Get out a list of matrices with the population for each timestep
 // [[Rcpp::export]]
 Rcpp::List projection(arma::vec initialPop, Rcpp::List noise) {
-  Rcpp::List vectors(noise.length());
-  for (int i = 0; i < noise.length(); ++i) {
-    vectors[i] = Rcpp::as<arma::vec>(noise[i]);
-  }
-  arma::vec sample = vectors[1];
-  int timesteps = sample.size();
-  Rcpp::List matrices(timesteps);
-  for (int i = 0; i < timesteps; ++i) {
-    arma::vec timestep(vectors.length());
-    for (int j = 0; j < vectors.length(); ++j) {
-      arma::vec v = vectors[j];
-      timestep(j) = v[i];
+    int timesteps = noise.size();
+    Rcpp::List population(timesteps);
+    population[0] = initialPop;
+    for (int i = 0; i < timesteps-1; ++i) {
+      arma::rowvec pop = population[i];
+      arma::mat proj = noise[i];
+      population[i + 1] = pop*proj;
     }
-    arma::mat projection = arma::mat(timestep);
-    projection.reshape(initialPop.size(), initialPop.size());
-    matrices[i] = projection.t();
-  }
-  Rcpp::List population(timesteps);
-  population[0] = initialPop;
-  for (int i = 0; i < timesteps-1; ++i) {
-    arma::rowvec pop = population[i];
-    arma::mat proj = matrices[i];
-    population[i + 1] = pop*proj;
-  }
-  population[0] = initialPop.t();
-  return population;
+    population[0] = initialPop.t();
+    return population;
 }
 
 // Matrix Projection Function with Demographic Stochasticity

@@ -5,7 +5,8 @@
 \title{Temporally Autocorrelated Matrix Population Models}
 \usage{
 matrix_model(data, initialPop, timesteps, covMatrix = NULL, colNames = NULL,
-  matrixStructure = NULL, repeatElements = NULL)
+  matrixStructure = NULL, repeatElements = NULL,
+  survivalOverflow = "scale")
 }
 \arguments{
 \item{data}{The input data can be one of two formats: a list of three matrices, or a data frame
@@ -43,6 +44,12 @@ indices that show which elements are repeats and which are unique. For example i
 assumed to have the same fertility, input `matrix(c(1, 1, 3, 4), byrow = T, ncol = 2)`. If you indicate repeat elements
 and you include a covariance matrix, the covariance matrix must only have as many columns as \emph{unique matrix elements}.
 Structural zeros should \emph{not} be included here as repeats, as they are automatically detected in the function.}
+
+\item{survivalOverflow}{If the survival for a stage is very high or very variable, the function may sometimes generate
+projection matrices with survival that exceeds 1 for that stage. The function has two methods of dealing with this problem:
+either discard all projection matrices and generate new ones until the survival falls within acceptable bounds ("redraw") or
+divide all the non-fertility matrix elements for that stage by the survival such that they add to 1 ("scale"). The default
+is "scale".}
 }
 \value{
 A data frame with n + 2 columns, where n is the number of stages in the matrix. One column indicates the timestep,

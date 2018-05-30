@@ -98,6 +98,11 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' assumed to have the same fertility, input `matrix(c(1, 1, 3, 4), byrow = T, ncol = 2)`. If you indicate repeat elements
 #' and you include a covariance matrix, the covariance matrix must only have as many columns as \emph{unique matrix elements}.
 #' Structural zeros should \emph{not} be included here as repeats, as they are automatically detected in the function.
+#' @param survivalOverflow If the survival for a stage is very high or very variable, the function may sometimes generate
+#' projection matrices with survival that exceeds 1 for that stage. The function has two methods of dealing with this problem:
+#' either discard all projection matrices and generate new ones until the survival falls within acceptable bounds ("redraw") or
+#' divide all the non-fertility matrix elements for that stage by the survival such that they add to 1 ("scale"). The default
+#' is "scale".
 #' @return A data frame with n + 2 columns, where n is the number of stages in the matrix. One column indicates the timestep,
 #' there is one column with the population size for each stage, and one column for total population size.
 #' @examples
@@ -109,7 +114,8 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
 #' head(sim)
 #' @export
 matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
-    colNames = NULL, matrixStructure = NULL, repeatElements = NULL) {
+    colNames = NULL, matrixStructure = NULL, repeatElements = NULL,
+    survivalOverflow = "scale") {
     stages <- length(initialPop)
     # Regularize all valid data inputs to the same format
     if (is.data.frame(data) == T) {
@@ -170,27 +176,53 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
       covMatrix <- cor2cov(inputs$sd, diag(nrow(inputs)))
     }
     # Create colored noise, discard if invalid matrix
-    repeat {
+    if(survivalOverflow == "redraw") {
+      repeat {
+        inputs$noise <- colored_multi_rnorm(timesteps, inputs$mean.trans, inputs$sd.trans,
+                                            inputs$autocorrelation, covMatrix) %>% split(col(.))
+        result <- left_join(dat, inputs, by = c("mean", "sd", "autocorrelation", "dist", "zero", "ref"))
+        result$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
+        # checking for >1 probability
+        result <- result %>% rowwise() %>% mutate(
+          natural.noise = ifelse(zero == T, list(noise),
+                                 ifelse(dist == "log", list(exp(noise)),
+                                        list(plogis(noise))))
+        )
+        matrices <- map(1:timesteps, function(x) {
+          matrix(map_dbl(result$natural.noise, x), byrow = T, ncol = stages)
+        })
+        matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
+          map(colSums) %>% map_lgl(function(x) all(x <= 1)) -> check
+        if (all(check == T)) {
+          break
+        }
+      }
+    } else if(survivalOverflow == "scale") {
       inputs$noise <- colored_multi_rnorm(timesteps, inputs$mean.trans, inputs$sd.trans,
-                                      inputs$autocorrelation, covMatrix) %>% split(col(.))
+                                          inputs$autocorrelation, covMatrix) %>% split(col(.))
       result <- left_join(dat, inputs, by = c("mean", "sd", "autocorrelation", "dist", "zero", "ref"))
       result$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
       # checking for >1 probability
       result <- result %>% rowwise() %>% mutate(
         natural.noise = ifelse(zero == T, list(noise),
                                ifelse(dist == "log", list(exp(noise)),
-                                      list(plogis(noise))))
-        )
+                                      list(plogis(noise)))))
       matrices <- map(1:timesteps, function(x) {
         matrix(map_dbl(result$natural.noise, x), byrow = T, ncol = stages)
       })
       matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
-        map(colSums) %>% map_lgl(function(x) all(x <= 1)) -> check
-      if (all(check == T)) {
-        break
+        map(colSums) %>% modify_depth(1, function(x) x <= 1) -> check
+      if (all(map_lgl(check, all)) == F) {
+        matrices <- map(1:length(matrices), function(x) {
+          matrices[[x]] %>% replace(which(matrixStructure=="fecundity"), 0) %>%
+            t() %>% split(seq(nrow(.))) %>%
+            map_if(!check[[x]], function(y) {y/sum(y)}) %>%
+            reduce(rbind) %>% t() %>%
+            replace(which(matrixStructure=="fecundity"), matrices[[x]][matrixStructure=="fecundity"])
+        })
       }
-    }
-    pop <- projection(initialPop, result$natural.noise)
+    } else {stop("survivalOverflow must be set to 'redraw' or 'scale'")}
+    pop <- projection(initialPop, matrices)
     pop %>% map(as_tibble) %>% bind_rows() %>%
       group_by(row_number()) %>% nest() %>% mutate(total = map(data, sum)) %>%
       unnest() %>% set_names(c("timestep", "total", paste0("stage", 1:stages)))
