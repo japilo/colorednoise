@@ -1,3 +1,7 @@
+## colorednoise 1.0.3
+
+* `matrix_model` now has more options for dealing with survival values erroneously set to >1.
+
 ## colorednoise 1.0.2
 
 * The Makevars have been tweaked so the package runs on more operating systems and compilers.
