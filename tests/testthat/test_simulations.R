@@ -18,7 +18,7 @@ test_that("unstructured_pop can produce red noise populations", {
     expect_true(mean(test_red) > 0.2)
 })
 
-test_that("matrix_model can produce cross-correlated autocorrelated populations with demographic stochasticity", {
+test_that("matrix_model can produce cross-correlated autocorrelated populations without demographic stochasticity", {
   meanMat <- matrix(c(0.6087097, 0.2480645, 1.6687097, 0.4335484), ncol=2)
   sdMat <- matrix(c(0.0442929, 0.03251947, 0.34437133, 0.10898160), ncol=2)
   phiMat <- matrix(c(-0.20349906,  0.05242292, -0.20349906,  0.02614703), ncol=2)

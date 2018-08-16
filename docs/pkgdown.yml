@@ -1,0 +1,8 @@
+pandoc: 2.1.1
+pkgdown: 1.1.0
+pkgdown_sha: ~
+articles:
+  noise: noise.html
+template:
+  params:
+    bootswatch: cosmo
