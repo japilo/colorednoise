@@ -5,3 +5,4 @@
 ^\.travis\.yml$
 ^/\.gitattributes$
 ^codecov\.yml$
+^docs$
