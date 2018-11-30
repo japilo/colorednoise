@@ -4,8 +4,8 @@
 \alias{matrix_model}
 \title{Temporally Autocorrelated Matrix Population Models}
 \usage{
-matrix_model(data, initialPop, timesteps, covMatrix = NULL, colNames = NULL,
-  matrixStructure = NULL, repeatElements = NULL,
+matrix_model(data, initialPop, timesteps, covMatrix = NULL,
+  colNames = NULL, matrixStructure = NULL, repeatElements = NULL,
   survivalOverflow = "scale")
 }
 \arguments{

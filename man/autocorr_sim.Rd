@@ -5,8 +5,8 @@
 \title{Simulate Temporally Autocorrelated Populations for Every Combination of
 Parameters}
 \usage{
-autocorr_sim(timesteps, start, survPhi, fecundPhi, survMean, survSd, fecundMean,
-  fecundSd, replicates)
+autocorr_sim(timesteps, start, survPhi, fecundPhi, survMean, survSd,
+  fecundMean, fecundSd, replicates)
 }
 \arguments{
 \item{timesteps}{The number of timesteps you want to simulate. Individuals

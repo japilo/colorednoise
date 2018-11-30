@@ -10,6 +10,7 @@
 #' @import purrr
 #' @import dplyr
 #' @importFrom stats sd acf na.omit plogis
+#' @importFrom tibble tibble as_tibble
 #' @import tidyr
 NULL
 

@@ -16,9 +16,10 @@ Imports:
   stats (>= 3.3.2),
   dplyr (>= 0.7.3),
   purrr (>= 0.2.3),
+  tibble (>= 2.0.0),
   tidyr (>= 0.8.0)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 Encoding: UTF-8
 LazyData: true
 BugReports: http://github.com/japilo/colorednoise/issues

@@ -146,6 +146,9 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
         if (all(data[[2]] >= 0) == F) {
             stop("Invalid values in SD matrix")
         }
+        if (length(unique(map_int(data, length)))>1) {
+          stop("Matrices are not equal dimensions")
+        }
         dat <- tibble(mean = as.vector(t(data[[1]])), sd = as.vector(t(data[[2]])),
             autocorrelation = as.vector(t(data[[3]])))
     } else {
@@ -223,7 +226,8 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
       }
     } else {stop("survivalOverflow must be set to 'redraw' or 'scale'")}
     pop <- projection(initialPop, matrices)
-    pop %>% map(as_tibble) %>% bind_rows() %>%
-      group_by(row_number()) %>% nest() %>% mutate(total = map(data, sum)) %>%
-      unnest() %>% set_names(c("timestep", "total", paste0("stage", 1:stages)))
+    pop %>% map(as_tibble, .name_repair = ~ c(paste0("stage", 1:stages))) %>%
+      bind_rows() %>% group_by(row_number()) %>% nest() %>%
+      mutate(total = map(data, sum)) %>% unnest() %>%
+      rename(timestep = `row_number()`)
 }
