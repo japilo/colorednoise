@@ -1,3 +1,7 @@
+## colorednoise 1.0.4
+
+* Updated to be compatible with tibble v2.0.0
+
 ## colorednoise 1.0.3
 
 * `matrix_model` now has more options for dealing with survival values erroneously set to >1.

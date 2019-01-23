@@ -227,7 +227,6 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     } else {stop("survivalOverflow must be set to 'redraw' or 'scale'")}
     pop <- projection(initialPop, matrices)
     pop %>% map(as_tibble, .name_repair = ~ c(paste0("stage", 1:stages))) %>%
-      bind_rows() %>% group_by(row_number()) %>% nest() %>%
-      mutate(total = map(data, sum)) %>% unnest() %>%
-      rename(timestep = `row_number()`)
+      bind_rows() %>% group_by(timestep = row_number()) %>% nest() %>%
+      mutate(total = map(data, sum)) %>% unnest()
 }
