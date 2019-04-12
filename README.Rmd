@@ -1,7 +1,5 @@
 ---
-output:
-  md_document:
-    variant: markdown_github
+output: github_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -15,7 +13,7 @@ knitr::opts_chunk$set(
 library(ggplot2)
 ```
 
-# colorednoise
+# colorednoise <img src='man/figures/logo.png' align="right" height="125" />
 [![Travis_build_status](https://travis-ci.org/japilo/colorednoise.svg?branch=master)](https://travis-ci.org/japilo/colorednoise)
 [![CRAN_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise)
 [![Coverage Status](https://img.shields.io/codecov/c/github/japilo/colorednoise/master.svg)](https://codecov.io/github/japilo/colorednoise?branch=master)
