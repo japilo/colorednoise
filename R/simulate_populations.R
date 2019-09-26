@@ -228,5 +228,5 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     pop <- projection(initialPop, matrices)
     pop %>% map(as_tibble, .name_repair = ~ c(paste0("stage", 1:stages))) %>%
       bind_rows() %>% group_by(timestep = row_number()) %>% nest(data = -timestep) %>%
-      mutate(total = map(data, sum)) %>% unnest(data)
+      mutate(total = map_dbl(data, sum)) %>% unnest(data)
 }
