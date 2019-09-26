@@ -2,7 +2,7 @@ Package: colorednoise
 Type: Package
 Title: Simulate Temporally Autocorrelated Populations
 Version: 1.0.5
-Date: 2019-01-23
+Date: 2019-09-26
 Authors@R: c(
     person("Julia", "Pilowsky", email = "jap2178@caa.columbia.edu", 
     role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6376-2585")
