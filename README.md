@@ -7,7 +7,7 @@
 [![CRAN\_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/japilo/colorednoise/master.svg)](https://codecov.io/github/japilo/colorednoise?branch=master)
-[![Download\_count](https://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](https://cran.rstudio.com/web/packages/colorednoise/index.html)
+[![Download\_count](https://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](https://CRAN.R-project.org/package=colorednoise)
 
 ## Overview
 
