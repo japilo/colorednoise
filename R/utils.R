@@ -25,3 +25,7 @@ autocorrelation <- function(x, biasCorrection = TRUE) {
   } else if (biasCorrection == FALSE) {
     acf(x, plot = F, na.action = na.omit)[[1]][2]}
 }
+
+
+#' @importFrom Rcpp evalCpp
+NULL
