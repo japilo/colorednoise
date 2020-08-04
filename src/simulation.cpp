@@ -2,12 +2,28 @@
 #include "noise.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
-// Variance Fix
-//
-// This function changes the variance so that once it is back-transformed
-// from the logit scale, the original variance is recovered.
+//' Translate Standard Deviation from the Natural Scale to the Log or Logit Scale
+//'
+//' This function changes a given standard deviation so that when a vector of samples is drawn from the given distribution,
+//' the original standard deviation will be recovered once it is back-transformed from the log or logit scale. In effect,
+//' the function "translates" a standard deviation from the natural scale to the log or logit scale for the purposes of
+//' random draws from a probability distribution.
+//' @param mu The mean of the distribution on the natural scale.
+//' @param sigma The standard devation of the distribution on the natural scale.
+//' @param dist The distribution to which the standard deviation should be transformed.
+//' @return The standard deviation translated to the log or logit scale.
+//' @examples
+//' mean <- 10
+//' stdev <- 2
+//' mean_trans <- log(mean)
+//' stdev_trans <- stdev_transform(mean, stdev, "log")
+//' draws <- rnorm(50, mean_trans, stdev_trans)
+//' natural_scale <- exp(draws)
+//' mean(draws)
+//' sd(draws)
+//' @export
 // [[Rcpp::export]]
-double variancefix(double mu, double sigma, std::string dist){
+double stdev_transform(double mu, double sigma, std::string dist){
   if (sigma == 0) {
     return 0;
   }
@@ -68,11 +84,11 @@ double variancefix(double mu, double sigma, std::string dist){
 Rcpp::DataFrame unstructured_pop(int start, int timesteps, double survPhi, double fecundPhi, double survMean, double survSd, double fecundMean, double fecundSd) {
   // These lines generate the temporally autocorrelated random numbers
   double survmu = R::qlogis(survMean, 0, 1, true, false);
-  double survsigma = variancefix(survMean, survSd, "qlogis");
+  double survsigma = stdev_transform(survMean, survSd, "qlogis");
   Rcpp::NumericVector survnoise = colored_noise(timesteps, survmu, survsigma, survPhi);
   Rcpp::NumericVector St = plogis(survnoise);
   double fecundmu = log(fecundMean);
-  double fecundsigma = variancefix(fecundMean, fecundSd, "log");
+  double fecundsigma = stdev_transform(fecundMean, fecundSd, "log");
   Rcpp::NumericVector fecundnoise = colored_noise(timesteps, fecundmu, fecundsigma, fecundPhi);
   Rcpp::NumericVector Ft = exp(fecundnoise);
   // This loop kills some individuals according to St probabilities, creates

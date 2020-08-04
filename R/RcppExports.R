@@ -68,18 +68,41 @@ cor2cov <- function(sigma, corrMatrix) {
 #' @param covMatrix A valid covariance matrix. The number of rows/columns must match the length of the mu, sigma, and phi vectors.
 #' @return A matrix with as many rows as timesteps and as many columns as mu/sigma/phi values.
 #' @examples
-#' cov <- matrix(c(0.037, 0.044, -0.048, 0.044, 0.247, -0.008, -0.047, -0.008, 0.074), nrow = 3)
+#' cov <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
 #' test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, -0.3, 0), cov)
 #' var(test)
-#' library(dplyr)
-#' test %>% as.data.frame() %>% summarize_all(.funs = c("mean", "sd", "autocorrelation"))
+#' library(data.table)
+#' as.data.table(test)[, .(V1_mean = mean(V1), V2_mean = mean(V2), V3_mean = mean(V3),
+#' V1_sd = sd(V1), V2_sd = sd(V2), V3_sd = sd(V3),
+#' V1_autocorrelation = autocorrelation(V1), V2_autocorrelation = autocorrelation(V2),
+#' V3_autocorrelation = autocorrelation(V3))]
 #' @export
 colored_multi_rnorm <- function(timesteps, mean, sd, phi, covMatrix) {
     .Call(`_colorednoise_colored_multi_rnorm`, timesteps, mean, sd, phi, covMatrix)
 }
 
-variancefix <- function(mu, sigma, dist) {
-    .Call(`_colorednoise_variancefix`, mu, sigma, dist)
+#' Translate Standard Deviation from the Natural Scale to the Log or Logit Scale
+#'
+#' This function changes a given standard deviation so that when a vector of samples is drawn from the given distribution,
+#' the original standard deviation will be recovered once it is back-transformed from the log or logit scale. In effect,
+#' the function "translates" a standard deviation from the natural scale to the log or logit scale for the purposes of
+#' random draws from a probability distribution.
+#' @param mu The mean of the distribution on the natural scale.
+#' @param sigma The standard devation of the distribution on the natural scale.
+#' @param dist The distribution to which the standard deviation should be transformed.
+#' @return The standard deviation translated to the log or logit scale.
+#' @examples
+#' mean <- 10
+#' stdev <- 2
+#' mean_trans <- log(mean)
+#' stdev_trans <- stdev_transform(mean, stdev, "log")
+#' draws <- rnorm(50, mean_trans, stdev_trans)
+#' natural_scale <- exp(draws)
+#' mean(draws)
+#' sd(draws)
+#' @export
+stdev_transform <- function(mu, sigma, dist) {
+    .Call(`_colorednoise_stdev_transform`, mu, sigma, dist)
 }
 
 #' Simulated Time Series of an Unstructured Temporally Autocorrelated Population

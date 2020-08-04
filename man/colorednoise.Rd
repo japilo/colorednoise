@@ -3,7 +3,6 @@
 \docType{package}
 \name{colorednoise}
 \alias{colorednoise}
-\alias{colorednoise-package}
 \title{\code{colorednoise} package}
 \description{
 Simulate Temporally Autocorrelated Populations

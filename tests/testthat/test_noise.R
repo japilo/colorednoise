@@ -1,6 +1,6 @@
 library(colorednoise)
 library(purrr)
-library(dplyr)
+library(data.table)
 context("Autocorrelation of colored noise")
 
 test_that("colored noise can produce blue noise", {
@@ -27,7 +27,9 @@ test_that("colored_multi_rnorm can produce red noise", {
   set.seed(989)
   corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
   test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(0.5, 0.5, 0.5), corr) %>%
-    as_tibble() %>% summarise_all(autocorrelation) %>% as.numeric()
+    as.data.table() %>%
+    .[, .(V1_autocorr = autocorrelation(V1), V2_autocorr = autocorrelation(V2), V3_autocorr = autocorrelation(V3))] %>%
+    as.numeric()
   expect_true(all(test > 0.5)==T)
 })
 
@@ -35,6 +37,8 @@ test_that("colored_multi_rnorm can produce blue noise", {
   set.seed(19045)
   corr <- matrix(c(1, 0.53, 0.73, 0.53, 1, 0.44, 0.73, 0.44, 1), nrow = 3)
   test <- colored_multi_rnorm(100, c(0, 3, 5), c(1, 0.5, 1), c(-0.5, -0.5, -0.5), corr) %>%
-    as_tibble() %>% summarise_all(autocorrelation) %>% as.numeric()
+    as.data.table() %>%
+    .[, .(V1_autocorr = autocorrelation(V1), V2_autocorr = autocorrelation(V2), V3_autocorr = autocorrelation(V3))] %>%
+    as.numeric()
   expect_true(all(test < -0.4)==T)
 })

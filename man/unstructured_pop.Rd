@@ -4,8 +4,16 @@
 \alias{unstructured_pop}
 \title{Simulated Time Series of an Unstructured Temporally Autocorrelated Population}
 \usage{
-unstructured_pop(start, timesteps, survPhi, fecundPhi, survMean, survSd,
-  fecundMean, fecundSd)
+unstructured_pop(
+  start,
+  timesteps,
+  survPhi,
+  fecundPhi,
+  survMean,
+  survSd,
+  fecundMean,
+  fecundSd
+)
 }
 \arguments{
 \item{start}{The starting population size.}

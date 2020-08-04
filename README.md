@@ -1,13 +1,14 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# colorednoise <img src='man/figures/logo.png' align="right" height="125" />
+# colorednoise <img src='man/figures/hex.png' align="right" height="125" />
 
 [![Travis\_build\_status](https://travis-ci.org/japilo/colorednoise.svg?branch=master)](https://travis-ci.org/japilo/colorednoise)
 [![CRAN\_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/japilo/colorednoise/master.svg)](https://codecov.io/github/japilo/colorednoise?branch=master)
 [![Download\_count](https://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](https://CRAN.R-project.org/package=colorednoise)
+[![Paper\_doi](https://img.shields.io/badge/doi-10.1111/oik.06438-orange.svg)](https://doi.org/10.1111/oik.06438)
 
 ## Overview
 

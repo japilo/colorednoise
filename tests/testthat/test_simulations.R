@@ -1,20 +1,22 @@
 library(purrr)
-library(dplyr)
+library(data.table)
 context("Consistency in population simulations")
 
 test_that("unstructured_pop can produce blue noise populations", {
     test_blue <- rerun(.n = 1000, unstructured_pop(start = 5000, timesteps = 50,
         survPhi = -0.5, survMean = 0.4, survSd = 0.05, fecundPhi = 0,
-        fecundMean = 1.5, fecundSd = 0.2)) %>% map(~mutate(., est_surv = survivors/population,
-        est_fecund = newborns/survivors)) %>% map_dbl(~autocorrelation(.$est_surv))
+        fecundMean = 1.5, fecundSd = 0.2)) %>% map(setDT) %>%
+      map(~.[, `:=`(est_surv = survivors/population, est_fecund = newborns/survivors)]) %>%
+      map_dbl(~autocorrelation(.$est_surv))
     expect_true(mean(test_blue) < -0.2)
 })
 
 test_that("unstructured_pop can produce red noise populations", {
     test_red <- rerun(.n = 1000, unstructured_pop(start = 5000, timesteps = 50,
         survPhi = 0.5, survMean = 0.4, survSd = 0.05, fecundPhi = 0,
-        fecundMean = 1.5, fecundSd = 0.2)) %>% map(~mutate(., est_surv = survivors/population,
-        est_fecund = newborns/survivors)) %>% map_dbl(~autocorrelation(.$est_surv))
+        fecundMean = 1.5, fecundSd = 0.2)) %>% map(setDT) %>%
+      map(~.[, `:=`(est_surv = survivors/population, est_fecund = newborns/survivors)]) %>%
+      map_dbl(~autocorrelation(.$est_surv))
     expect_true(mean(test_red) > 0.2)
 })
 
@@ -33,11 +35,11 @@ test_that("matrix_model can produce cross-correlated autocorrelated populations 
   expect_true(sum(test[nrow(test), 2:3]) > sum(test[1, 2:3]))
 })
 
-test_that("output of variancefix transforms back to the natural scale", {
+test_that("output of stdev_transform transforms back to the natural scale", {
   mu <- 0.5
   sigma <- 0.2
   mu.log <- log(mu)
-  sigma.log <- variancefix(mu, sigma, "log")
+  sigma.log <- stdev_transform(mu, sigma, "log")
   rand <- rnorm(1000, mu.log, sigma.log) %>% exp()
   expect_true(sd(rand)>=sigma && sd(rand)<0.25)
 })

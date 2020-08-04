@@ -15,9 +15,10 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 library("colorednoise")
-library("dplyr")
 library("ggplot2")
 library("purrr")
+library("data.table")
+library("Rcpp")
 ```
 
 ## What is colored noise? 
@@ -65,9 +66,9 @@ The estimates for these seem to be quite accurate. But let's try generating a wh
 
 ```{r generate replicates}
 raw_sims <- cross_df(list(timesteps = 20, phi = c(-0.5, 0, 0.5), mean = 0.3, sd = c(0.5, 0.7, 0.9, 1.1, 1.3, 1.5))) %>% rerun(.n = 30, pmap(., colored_noise))
-labels <- raw_sims %>% map(1) %>% bind_rows()
+labels <- raw_sims %>% map(1) %>% rbindlist()
 noise <- raw_sims %>% map(2) %>% flatten()
-estimates <- data.frame(mu = map_dbl(noise, mean), sigma = map_dbl(noise, sd), autocorrelation = map_dbl(noise, autocorrelation))
+estimates <- data.table(mu = map_dbl(noise, mean), sigma = map_dbl(noise, sd), autocorrelation = map_dbl(noise, autocorrelation))
 sd_range <- cbind(labels, estimates)
 head(sd_range)
 ```
@@ -75,9 +76,12 @@ head(sd_range)
 We can visualize these results by finding the mean and confidence intervals of the autocorrelation estimates for each combination of variance and noise color, and plotting them out.
 
 ```{r plot CIs}
-sd_range %>% group_by(phi, sd) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[1]]})(.)),
-           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95))[[2]]})(.)),
-           mean = mean(.)), .vars = vars(autocorrelation)) -> summ
+summ <- sd_range[, .(lower.ci = ((function(bar) {
+    quantile(bar, probs = c(0.05, 0.95))[[1]]
+})(autocorrelation)), upper.ci = ((function(bar) {
+    quantile(bar, probs = c(0.05, 0.95))[[2]]
+})(autocorrelation)), mean = mean(autocorrelation)), keyby = .(phi, 
+    sd)]
 ggplot(summ, aes(x = sd, y = mean)) +
   geom_pointrange(aes(ymin = lower.ci, ymax = upper.ci, color = factor(phi)), size = 0.8) + 
   geom_hline(yintercept = 0, linetype = 2, color = "#C0C0C0") +
@@ -114,15 +118,17 @@ Here we see one example of a population simulated by the function.
 Now let's estimate the autocorrelation in each of these simulated populations. There is a utility function `autocorrelation` in this package that measures temporal autocorrelation at a time lag of 1.
 
 ```{r estimate autocorrelation}
-sims %>% map(~group_by(., survPhi, timesteps)) %>% map(~summarize(., acf.surv = autocorrelation(est_surv, biasCorrection = F))) %>% bind_rows -> estimates
+estimates <- sims %>% map(~.[, .(acf.surv = autocorrelation(est_surv, biasCorrection = F)), keyby = .(survPhi, timesteps)]) %>% rbindlist()
 ```
 
 I find that this format of ggplot displays the estimates by noise color very nicely.
 
 ```{r plotting estimates, fig.height=5, fig.width=8}
-estimates %>% group_by(survPhi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[1]]})(.)),
-           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[2]]})(.)),
-           mean = mean(., na.rm = T)), .vars = vars(acf.surv)) -> summ2
+summ2 <- estimates[, .(lower.ci = ((function(bar) {
+    quantile(bar, probs = c(0.05, 0.95))[[1]]
+})(acf.surv)), upper.ci = ((function(bar) {
+    quantile(bar, probs = c(0.05, 0.95))[[2]]
+})(acf.surv)), mean = mean(acf.surv)), keyby = .(survPhi, timesteps)]
 # Noise color values for the graph in hexadecimal
 noise = c("#0033FF", "#3366FF", "#6699FF", "#99CCFF", "#FFFFFF", "#FF9999", "#FF6666","#FF0000", "#CC0000")
 ggplot(summ2, aes(x=timesteps, y=mean)) + geom_point(size=8, aes(color=factor(survPhi))) +
@@ -145,9 +151,11 @@ where \phi is the autocorrelation and T is the length of the time series.
 Here is what the autocorrelation estimates look like when I turn on the bias correction in the autocorrelation function.
 
 ```{r bias correction, message = F}
-sims %>% map(~group_by(., survPhi, timesteps)) %>% map(~summarize(., acf.surv = autocorrelation(est_surv, biasCorrection = TRUE))) %>% bind_rows() %>% group_by(survPhi, timesteps) %>% summarize_at(funs(lower.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[1]]})(.)),
-           upper.ci = ((function(bar){quantile(bar, probs=c(0.05, 0.95), na.rm = T)[[2]]})(.)),
-           mean = mean(., na.rm = T)), .vars = vars(acf.surv)) -> summ3
+summ3 <- sims %>% map(~.[, .(acf.surv = autocorrelation(est_surv, biasCorrection = TRUE)), keyby = .(survPhi, timesteps)]) %>% rbindlist() %>% .[, .(lower.ci = ((function(bar) {
+    quantile(bar, probs = c(0.05, 0.95), na.rm=T)[[1]]
+})(acf.surv)), upper.ci = ((function(bar) {
+    quantile(bar, probs = c(0.05, 0.95), na.rm=T)[[2]]
+})(acf.surv)), mean = mean(acf.surv)), keyby = .(survPhi, timesteps)]
 ggplot(summ3, aes(x=timesteps, y=mean)) + 
   geom_point(size=8, aes(color=factor(survPhi))) +
   geom_pointrange(aes(ymin=lower.ci, ymax=upper.ci), size=0.8) + 

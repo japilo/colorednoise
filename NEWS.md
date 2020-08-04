@@ -1,10 +1,15 @@
+## colorednoise 1.1.0
+
+* New function exported: `stdev_transform`, which adapts standard deviations to different probability distributions.
+* colorednoise now runs on `data.table` instead of `dplyr`, `tibble`, and `tidyr` for faster simulations.
+
 ## colorednoise 1.0.5
 
-* Updated to be compatible with tidyr v1.0.0
+* Updated to be compatible with `tidyr` v1.0.0
 
 ## colorednoise 1.0.4
 
-* Updated to be compatible with tibble v2.0.0
+* Updated to be compatible with `tibble` v2.0.0
 
 ## colorednoise 1.0.3
 

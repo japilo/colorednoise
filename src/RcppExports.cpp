@@ -60,16 +60,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// variancefix
-double variancefix(double mu, double sigma, std::string dist);
-RcppExport SEXP _colorednoise_variancefix(SEXP muSEXP, SEXP sigmaSEXP, SEXP distSEXP) {
+// stdev_transform
+double stdev_transform(double mu, double sigma, std::string dist);
+RcppExport SEXP _colorednoise_stdev_transform(SEXP muSEXP, SEXP sigmaSEXP, SEXP distSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< double >::type mu(muSEXP);
     Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
-    rcpp_result_gen = Rcpp::wrap(variancefix(mu, sigma, dist));
+    rcpp_result_gen = Rcpp::wrap(stdev_transform(mu, sigma, dist));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -109,7 +109,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_colorednoise_multi_rnorm", (DL_FUNC) &_colorednoise_multi_rnorm, 3},
     {"_colorednoise_cor2cov", (DL_FUNC) &_colorednoise_cor2cov, 2},
     {"_colorednoise_colored_multi_rnorm", (DL_FUNC) &_colorednoise_colored_multi_rnorm, 5},
-    {"_colorednoise_variancefix", (DL_FUNC) &_colorednoise_variancefix, 3},
+    {"_colorednoise_stdev_transform", (DL_FUNC) &_colorednoise_stdev_transform, 3},
     {"_colorednoise_unstructured_pop", (DL_FUNC) &_colorednoise_unstructured_pop, 8},
     {"_colorednoise_projection", (DL_FUNC) &_colorednoise_projection, 2},
     {NULL, NULL, 0}
