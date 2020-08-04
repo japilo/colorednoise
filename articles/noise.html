@@ -111,12 +111,12 @@
 <p>To show you how you can use this package to simulate and analyze colored noise, I will present a problem for us to solve. Let’s say we want to find out whether our estimates of temporal autocorrelation are biased when the standard deviation of the colored noise is high. First, let’s use the <code>raw_noise</code> function to generate some colored noise with high variance.</p>
 <div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="no">red</span> <span class="kw">&lt;-</span> <span class="fu">colored_noise</span>(<span class="kw">timesteps</span> <span class="kw">=</span> <span class="fl">100</span>, <span class="kw">mean</span> <span class="kw">=</span> <span class="fl">0.3</span>, <span class="kw">sd</span> <span class="kw">=</span> <span class="fl">1.2</span>, <span class="kw">phi</span> <span class="kw">=</span> <span class="fl">0.5</span>)
 <span class="no">red</span>[<span class="fl">1</span>:<span class="fl">10</span>]
-<span class="co">#&gt;  [1]  1.11338642  0.89122190  2.43140940  1.28325965  0.84462601  0.74068681</span>
-<span class="co">#&gt;  [7]  2.98260404  2.65548387  0.05542248 -1.12641164</span>
+<span class="co">#&gt;  [1] -0.20935359 -1.87097168 -1.19974971 -0.93623893  1.14874881  0.14721340</span>
+<span class="co">#&gt;  [7] -0.09697702  0.34928677  0.03485599  0.21962098</span>
 <span class="no">blue</span> <span class="kw">&lt;-</span> <span class="fu">colored_noise</span>(<span class="kw">timesteps</span> <span class="kw">=</span> <span class="fl">100</span>, <span class="kw">mean</span> <span class="kw">=</span> <span class="fl">0.3</span>, <span class="kw">sd</span> <span class="kw">=</span> <span class="fl">1.2</span>, <span class="kw">phi</span> <span class="kw">=</span> -<span class="fl">0.5</span>)
 <span class="no">blue</span>[<span class="fl">1</span>:<span class="fl">10</span>]
-<span class="co">#&gt;  [1]  0.04577544  0.80638740  1.84709282 -0.48648466 -1.10795567  2.17319105</span>
-<span class="co">#&gt;  [7] -0.84642927  1.97186461 -2.42890221  1.59705019</span>
+<span class="co">#&gt;  [1]  1.5516770 -1.7072008  2.4646830 -1.1747160  0.8458874  0.8579653</span>
+<span class="co">#&gt;  [7] -0.8171834  0.7091168  0.2623846  0.9916333</span>
 <span class="fu">ggplot</span>(<span class="kw">data</span> <span class="kw">=</span> <span class="kw">NULL</span>, <span class="fu">aes</span>(<span class="kw">x</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>:<span class="fl">100</span>), <span class="kw">y</span> <span class="kw">=</span> <span class="no">blue</span>)) + <span class="fu">geom_line</span>(<span class="kw">color</span><span class="kw">=</span><span class="st">"blue"</span>) + <span class="fu">theme_minimal</span>() + <span class="fu">theme</span>(<span class="kw">axis.title</span> <span class="kw">=</span> <span class="fu">element_blank</span>()) + <span class="fu">ggtitle</span>(<span class="st">"Blue Noise"</span>)</pre></body></html></div>
 <p><img src="noise_files/figure-html/generate%20noise-1.png" width="700"></p>
 <div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu">ggplot</span>(<span class="kw">data</span> <span class="kw">=</span> <span class="kw">NULL</span>, <span class="fu">aes</span>(<span class="kw">x</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">1</span>:<span class="fl">100</span>), <span class="kw">y</span> <span class="kw">=</span> <span class="no">red</span>)) + <span class="fu">geom_line</span>(<span class="kw">color</span><span class="kw">=</span><span class="st">"red"</span>) + <span class="fu">theme_minimal</span>() + <span class="fu">theme</span>(<span class="kw">axis.title</span> <span class="kw">=</span> <span class="fu">element_blank</span>()) + <span class="fu">ggtitle</span>(<span class="st">"Red Noise"</span>)</pre></body></html></div>
@@ -124,22 +124,22 @@
 <p>The red noise and blue noise look the way they should. Now let’s estimate the mean, SD, and autocorrelation of these two sets of random numbers to see how well they match the parameters we used to generate them.</p>
 <div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu">invoke_map</span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">mean</span>, <span class="no">sd</span>, <span class="no">autocorrelation</span>), <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">red</span>)), <span class="fl">3</span>))
 <span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt; [1] 0.09605931</span>
+<span class="co">#&gt; [1] 0.4518703</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt; [1] 1.589679</span>
+<span class="co">#&gt; [1] 1.199526</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[3]]</span>
-<span class="co">#&gt; [1] 0.684355</span>
+<span class="co">#&gt; [1] 0.4938851</span>
 <span class="fu">invoke_map</span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">mean</span>, <span class="no">sd</span>, <span class="no">autocorrelation</span>), <span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="no">blue</span>)), <span class="fl">3</span>))
 <span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt; [1] 0.2752775</span>
+<span class="co">#&gt; [1] 0.3797234</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt; [1] 1.24225</span>
+<span class="co">#&gt; [1] 1.148722</span>
 <span class="co">#&gt; </span>
 <span class="co">#&gt; [[3]]</span>
-<span class="co">#&gt; [1] -0.5798485</span></pre></body></html></div>
+<span class="co">#&gt; [1] -0.5930628</span></pre></body></html></div>
 <p>The estimates for these seem to be quite accurate. But let’s try generating a whole lot of colored noise across a range of variance and color and estimating the autocorrelation of each replicate.</p>
 <div class="sourceCode" id="cb4"><html><body><pre class="r"><span class="no">raw_sims</span> <span class="kw">&lt;-</span> <span class="fu">cross_df</span>(<span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span>(<span class="kw">timesteps</span> <span class="kw">=</span> <span class="fl">20</span>, <span class="kw">phi</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(-<span class="fl">0.5</span>, <span class="fl">0</span>, <span class="fl">0.5</span>), <span class="kw">mean</span> <span class="kw">=</span> <span class="fl">0.3</span>, <span class="kw">sd</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.5</span>, <span class="fl">0.7</span>, <span class="fl">0.9</span>, <span class="fl">1.1</span>, <span class="fl">1.3</span>, <span class="fl">1.5</span>))) <span class="kw">%&gt;%</span> <span class="fu">rerun</span>(<span class="kw">.n</span> <span class="kw">=</span> <span class="fl">30</span>, <span class="fu">pmap</span>(<span class="no">.</span>, <span class="no">colored_noise</span>))
 <span class="no">labels</span> <span class="kw">&lt;-</span> <span class="no">raw_sims</span> <span class="kw">%&gt;%</span> <span class="fu">map</span>(<span class="fl">1</span>) <span class="kw">%&gt;%</span> <span class="fu">rbindlist</span>()
@@ -147,13 +147,13 @@
 <span class="no">estimates</span> <span class="kw">&lt;-</span> <span class="fu">data.table</span>(<span class="kw">mu</span> <span class="kw">=</span> <span class="fu">map_dbl</span>(<span class="no">noise</span>, <span class="no">mean</span>), <span class="kw">sigma</span> <span class="kw">=</span> <span class="fu">map_dbl</span>(<span class="no">noise</span>, <span class="no">sd</span>), <span class="kw">autocorrelation</span> <span class="kw">=</span> <span class="fu">map_dbl</span>(<span class="no">noise</span>, <span class="no">autocorrelation</span>))
 <span class="no">sd_range</span> <span class="kw">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="no">labels</span>, <span class="no">estimates</span>)
 <span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">sd_range</span>)
-<span class="co">#&gt;    timesteps  phi mean  sd         mu     sigma autocorrelation</span>
-<span class="co">#&gt; 1:        20 -0.5  0.3 0.5 0.27566936 0.4378526      -0.2844773</span>
-<span class="co">#&gt; 2:        20  0.0  0.3 0.5 0.44222912 0.4498519       0.1189560</span>
-<span class="co">#&gt; 3:        20  0.5  0.3 0.5 0.32835512 0.4259221       0.3747385</span>
-<span class="co">#&gt; 4:        20 -0.5  0.3 0.7 0.38903363 0.6772863      -0.6081804</span>
-<span class="co">#&gt; 5:        20  0.0  0.3 0.7 0.30529683 0.7024957      -0.1636181</span>
-<span class="co">#&gt; 6:        20  0.5  0.3 0.7 0.02425405 0.6925781       0.6142899</span></pre></body></html></div>
+<span class="co">#&gt;    timesteps  phi mean  sd          mu     sigma autocorrelation</span>
+<span class="co">#&gt; 1:        20 -0.5  0.3 0.5  0.32941559 0.6959137     -0.63006498</span>
+<span class="co">#&gt; 2:        20  0.0  0.3 0.5  0.20651345 0.4219250     -0.12165132</span>
+<span class="co">#&gt; 3:        20  0.5  0.3 0.5  0.61199803 0.3914582      0.09640954</span>
+<span class="co">#&gt; 4:        20 -0.5  0.3 0.7  0.24751294 0.8181860     -0.27868657</span>
+<span class="co">#&gt; 5:        20  0.0  0.3 0.7 -0.05766536 0.6984738     -0.05168956</span>
+<span class="co">#&gt; 6:        20  0.5  0.3 0.7  0.32990051 0.7459511      0.91558026</span></pre></body></html></div>
 <p>We can visualize these results by finding the mean and confidence intervals of the autocorrelation estimates for each combination of variance and noise color, and plotting them out.</p>
 <div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="no">summ</span> <span class="kw">&lt;-</span> <span class="no">sd_range</span>[, <span class="fu">.</span>(<span class="kw">lower.ci</span> <span class="kw">=</span> ((<span class="kw">function</span>(<span class="no">bar</span>) {
     <span class="fu"><a href="https://rdrr.io/r/stats/quantile.html">quantile</a></span>(<span class="no">bar</span>, <span class="kw">probs</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">0.05</span>, <span class="fl">0.95</span>))<span class="kw">[[</span><span class="fl">1</span>]]
