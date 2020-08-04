@@ -8,12 +8,13 @@ r:
   - devel
 os:
   - linux
+  - osx
 
 compiler:
   - gcc
 
 install:
-  - R -e 'install.packages(c("dplyr", "purrr", "tidyr", "Rcpp", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr", "pkgdown"))'
+  - R -e 'install.packages(c("data.table", "purrr", "RcppArmadillo", "knitr", "ggplot2", "rmarkdown", "testthat", "covr", "pkgdown"))'
 
 after_success:
 - Rscript -e 'covr::codecov()'
