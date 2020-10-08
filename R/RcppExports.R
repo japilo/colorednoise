@@ -88,7 +88,7 @@ colored_multi_rnorm <- function(timesteps, mean, sd, phi, covMatrix) {
 #' the function "translates" a standard deviation from the natural scale to the log or logit scale for the purposes of
 #' random draws from a probability distribution.
 #' @param mu The mean of the distribution on the natural scale.
-#' @param sigma The standard devation of the distribution on the natural scale.
+#' @param sigma The standard deviation of the distribution on the natural scale.
 #' @param dist The distribution to which the standard deviation should be transformed.
 #' @return The standard deviation translated to the log or logit scale.
 #' @examples

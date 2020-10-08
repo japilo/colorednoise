@@ -8,7 +8,6 @@ r:
   - devel
 os:
   - linux
-  - osx
 
 compiler:
   - gcc
