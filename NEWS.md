@@ -1,3 +1,6 @@
+## colorednoise 1.1.1
+* Patched the issue with `@docType package` in `roxygen2`.
+
 ## colorednoise 1.1.0
 
 * New function exported: `stdev_transform`, which adapts standard deviations to different probability distributions.

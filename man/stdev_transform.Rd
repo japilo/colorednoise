@@ -9,7 +9,7 @@ stdev_transform(mu, sigma, dist)
 \arguments{
 \item{mu}{The mean of the distribution on the natural scale.}
 
-\item{sigma}{The standard devation of the distribution on the natural scale.}
+\item{sigma}{The standard deviation of the distribution on the natural scale.}
 
 \item{dist}{The distribution to which the standard deviation should be transformed.}
 }

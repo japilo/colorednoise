@@ -1,16 +1,17 @@
 Package: colorednoise
 Type: Package
 Title: Simulate Temporally Autocorrelated Populations
-Version: 1.1.0
-Date: 2020-08-03
+Version: 1.1.1
+Date: 2023-08-23
 Authors@R: c(
-    person("Julia", "Pilowsky", email = "jap2178@caa.columbia.edu", 
+    person("July", "Pilowsky", email = "pilowskyj@caryinstitute.org", 
     role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6376-2585")
     ))
-Maintainer: Julia Pilowsky <jap2178@caa.columbia.edu>
+Maintainer: July Pilowsky <pilowskyj@caryinstitute.org>
 Description: Temporally autocorrelated populations are correlated in their vital rates (growth, death, etc.) from year to year. It is very common for populations, whether they be bacteria, plants, or humans, to be temporally autocorrelated. This poses a challenge for stochastic population modeling, because a temporally correlated population will behave differently from an uncorrelated one.
     This package provides tools for simulating populations with white noise (no temporal autocorrelation), red noise (positive temporal autocorrelation), and blue noise (negative temporal autocorrelation).  The algebraic formulation for autocorrelated noise comes from Ruokolainen et al. (2009) <doi:10.1016/j.tree.2009.04.009>. Models for unstructured populations and for structured populations (matrix models) are available.
 License: GPL-3
+Language: en-US
 Depends: R (>= 3.3.0)
 Imports:
   stats (>= 3.3.2),
@@ -18,10 +19,9 @@ Imports:
   Rcpp (>= 1.0.5),
   data.table (>= 1.12.8)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.3
 Encoding: UTF-8
-LazyData: true
-BugReports: http://github.com/japilo/colorednoise/issues
+BugReports: https://github.com/japilo/colorednoise/issues
 Suggests:
     ggplot2 (>= 2.2.1),
     knitr (>= 1.17),

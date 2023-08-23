@@ -1,8 +1,11 @@
 ## Test environments
-* local Windows 10 install, R 4.0
-* Ubuntu 16.04 (on travis-ci), R 3.6, 4.0, devel
-* macOS 10.13 (on travis-ci), R 4.0
+* local macOS 13.4 install, R 4.3.0 (clang, gfortran)
+* win-builder, R-devel (GCC)
 
 ## R CMD check results
 
-There were no ERRORs, WARNINGs, or NOTEs.
+1 NOTE: New maintainer
+
+## Notes
+
+* There is no new maintainer, I have simply changed my name.

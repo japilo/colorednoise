@@ -5,6 +5,7 @@
 #' See the README on \href{https://github.com/japilo/colorednoise#readme}{GitHub}
 #'
 #' @docType package
+#' @aliases colorednoise-package
 #' @name colorednoise
 #' @useDynLib colorednoise, .registration = TRUE
 #' @import purrr
