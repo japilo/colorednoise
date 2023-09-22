@@ -7,3 +7,4 @@
 ^/\.gitattributes$
 ^codecov\.yml$
 ^docs$
+^CRAN-SUBMISSION$
