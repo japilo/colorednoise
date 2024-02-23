@@ -1,8 +1,8 @@
 Package: colorednoise
 Type: Package
 Title: Simulate Temporally Autocorrelated Populations
-Version: 1.1.1
-Date: 2023-08-23
+Version: 1.1.2
+Date: 2024-02-23
 Authors@R: c(
     person("July", "Pilowsky", email = "pilowskyj@caryinstitute.org", 
     role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6376-2585")
@@ -19,7 +19,7 @@ Imports:
   Rcpp (>= 1.0.5),
   data.table (>= 1.12.8)
 LinkingTo: Rcpp, RcppArmadillo
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Encoding: UTF-8
 BugReports: https://github.com/japilo/colorednoise/issues
 Suggests:

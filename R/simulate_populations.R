@@ -120,14 +120,17 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     # Regularize all valid data input to the same format
     if (is.data.frame(data) == T) {
         if (is.null(colNames) == F) {
-            data <- data %>% setDT() %>% setnames(old = colNames, new = names(colNames))
+            data <- data %>% setDT() %>%
+              setnames(old = colNames, new = names(colNames))
         }
         if (all(names(data) == c("mean", "sd", "autocorrelation")) ==
             F) {
             stop("Please name data frame columns correctly")
         }
         if (stages^2 != nrow(data)) {
-            stop("Number of stages in initial population vector does not match number of rows in data. Do you have a row for every matrix element?")
+            stop("Number of stages in initial population vector does not match
+                 number of rows in data. Do you have a row for every matrix
+                 element?")
         }
         if (all(data$mean > 0) == F) {
             stop("Invalid values in mean column")
@@ -149,10 +152,12 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
         if (length(unique(map_int(data, length)))>1) {
           stop("Matrices are not equal dimensions")
         }
-        dat <- data.table(mean = as.vector(t(data[[1]])), sd = as.vector(t(data[[2]])),
+        dat <- data.table(mean = as.vector(t(data[[1]])),
+                          sd = as.vector(t(data[[2]])),
             autocorrelation = as.vector(t(data[[3]])))
     } else {
-        stop("Invalid data type. Must be a list of three matrices or a data frame with three columns.")
+        stop("Invalid data type. Must be a list of three matrices or a data
+             frame with three columns.")
     }
     # Generate neutral / null versions of matrixStructure, repeatElements, and
     # covMatrix if not specified in function input
@@ -172,7 +177,7 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     unique <- dat[which(t(repeats))][zero == F]
     unique$mean.trans <- map_dbl(c(1:nrow(unique)), function(x) {
       if(dat[x,]$mean == 0) {0} else {
-        invoke(dat[x,]$dist, list(dat[x,]$mean))
+        exec(dat[x,]$dist, !!!list(dat[x,]$mean))
         }
     })
     unique$sd.trans <- map_dbl(c(1:nrow(unique)), function(x) {
@@ -186,15 +191,26 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
     # Create colored noise, discard if invalid matrix
     if(survivalOverflow == "redraw") {
       repeat {
-        unique$noise <- colored_multi_rnorm(timesteps, unique$mean.trans, unique$sd.trans,
-                                            unique$autocorrelation, covMatrix) %>% split(col(.))
-        result <- dat[unique, on = .(mean, sd, autocorrelation, dist, zero, ref), allow.cartesian = TRUE]
+        unique$noise <- colored_multi_rnorm(timesteps, unique$mean.trans,
+                                            unique$sd.trans,
+                                            unique$autocorrelation,
+                                            covMatrix) %>%
+          split(col(.))
+        result <- dat[unique, on = .(mean, sd, autocorrelation, dist, zero, ref),
+                      allow.cartesian = TRUE] |>
+          rbind(dat[zero == T], fill = T) |>
+          setorder(ref)
         result$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
         # checking for >1 probability
         result$natural.noise <- map(c(1:nrow(result)), function(x) {
-          if (result[x,]$zero) {result[x,]$noise} else if (result[x,]$dist=="log") {
-            exp(result[x,]$noise[[1]])} else {plogis(result[x,]$noise[[1]])}
-          })
+          if (result[x, ]$zero) {
+            result[x, ]$noise[[1]]
+          } else if (result[x, ]$dist == "log") {
+            exp(result[x, ]$noise[[1]])
+          } else {
+            plogis(result[x, ]$noise[[1]])
+          }
+        })
         matrices <- map(1:timesteps, function(x) {
           matrix(map_dbl(result$natural.noise, x), byrow = T, ncol = stages)
         })
@@ -205,17 +221,28 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
         }
       }
     } else if(survivalOverflow == "scale") {
-      unique$noise <- colored_multi_rnorm(timesteps, unique$mean.trans, unique$sd.trans,
-                                          unique$autocorrelation, covMatrix) %>% split(col(.))
-      result <- dat[unique, on = .(mean, sd, autocorrelation, dist, zero, ref), allow.cartesian = TRUE]
+      unique$noise <- colored_multi_rnorm(timesteps, unique$mean.trans,
+                                          unique$sd.trans,
+                                          unique$autocorrelation,
+                                          covMatrix) %>%
+        split(col(.))
+      result <- dat[unique, on = .(mean, sd, autocorrelation, dist, zero, ref),
+                    allow.cartesian = TRUE] |>
+        rbind(dat[zero == T], fill = T) |>
+        setorder(ref)
       result$noise[dat$zero==T] <- rep(list(rep.int(0, timesteps)), sum(dat$zero==T))
       # checking for >1 probability
       result$natural.noise <- map(c(1:nrow(result)), function(x) {
-        if (result[x,]$zero) {result[x,]$noise} else if (result[x,]$dist=="log") {
-          exp(result[x,]$noise[[1]])} else {plogis(result[x,]$noise[[1]])}
+       if (result[x, ]$zero) {
+         result[x, ]$noise[[1]]
+       } else if (result[x, ]$dist == "log") {
+         exp(result[x, ]$noise[[1]])
+       } else {
+         plogis(result[x, ]$noise[[1]])
+       }
       })
       matrices <- map(1:timesteps, function(x) {
-        matrix(map_dbl(result$natural.noise, x), byrow = T, ncol = stages)
+       matrix(map_dbl(result$natural.noise, x), byrow = T, ncol = stages)
       })
       matrices %>% map(replace, which(matrixStructure=="fecundity"), 0) %>%
         map(colSums) %>% modify_depth(1, function(x) x <= 1) -> check
@@ -230,7 +257,6 @@ matrix_model <- function(data, initialPop, timesteps, covMatrix = NULL,
       }
     } else {stop("survivalOverflow must be set to 'redraw' or 'scale'")}
     pop <- projection(initialPop, matrices)
-    # CONVERT TO DATA.TABLE
     output <- pop %>% map(as.data.table) %>% rbindlist() %>%
       .[, `:=`(total = rowSums(.SD), timestep = seq_len(.N))] %>% setcolorder("timestep")
     names(output) <- c("timestep", map_chr(1:stages, ~paste0("stage", .)), "total")

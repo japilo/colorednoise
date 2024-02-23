@@ -1,10 +1,12 @@
+#' @keywords internal
+"_PACKAGE"
+
 #' \code{colorednoise} package
 #'
 #' Simulate Temporally Autocorrelated Populations
 #'
 #' See the README on \href{https://github.com/japilo/colorednoise#readme}{GitHub}
 #'
-#' @docType package
 #' @aliases colorednoise-package
 #' @name colorednoise
 #' @useDynLib colorednoise, .registration = TRUE

@@ -1,3 +1,6 @@
+## colorednoise 1.1.2
+* Debugged some issues with sparse matrices in `matrix_model`.
+
 ## colorednoise 1.1.1
 * Patched the issue with `@docType package` in `roxygen2`.
 
