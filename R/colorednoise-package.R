@@ -7,8 +7,7 @@
 #'
 #' See the README on \href{https://github.com/japilo/colorednoise#readme}{GitHub}
 #'
-#' @aliases colorednoise-package
-#' @name colorednoise
+#' @name colorednoise-package
 #' @useDynLib colorednoise, .registration = TRUE
 #' @import purrr
 #' @importFrom Rcpp evalCpp
