@@ -1,0 +1,16 @@
+autocorr_sim            Simulate Temporally Autocorrelated Populations
+                        for Every Combination of Parameters
+autocorrelation         Estimate the Temporal Autocorrelation of a
+                        Numeric Vector
+colored_multi_rnorm     Generate Multiple Cross-Correlated &
+                        Autocorrelated Variables
+colored_noise           Generate Autocorrelated Noise
+cor2cov                 Convert from Correlation Matrix to Covariance
+                        Matrix
+matrix_model            Temporally Autocorrelated Matrix Population
+                        Models
+multi_rnorm             Generate Correlated Normal Random Numbers
+stdev_transform         Translate Standard Deviation from the Natural
+                        Scale to the Log or Logit Scale
+unstructured_pop        Simulated Time Series of an Unstructured
+                        Temporally Autocorrelated Population

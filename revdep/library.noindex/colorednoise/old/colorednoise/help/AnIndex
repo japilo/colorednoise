@@ -1,0 +1,11 @@
+colorednoise-package	colorednoise
+autocorrelation	autocorrelation
+autocorr_sim	autocorr_sim
+colorednoise	colorednoise
+colored_multi_rnorm	colored_multi_rnorm
+colored_noise	colored_noise
+cor2cov	cor2cov
+matrix_model	matrix_model
+multi_rnorm	multi_rnorm
+stdev_transform	stdev_transform
+unstructured_pop	unstructured_pop
