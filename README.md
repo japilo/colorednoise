@@ -4,8 +4,8 @@
 # colorednoise <img src='man/figures/hex.png' align="right" height="125" />
 
 [![CRAN_version](https://www.r-pkg.org/badges/version/colorednoise)](https://cran.r-project.org/package=colorednoise)
-[![Coverage
-Status](https://img.shields.io/codecov/c/github/japilo/colorednoise/master.svg)](https://app.codecov.io/github/japilo/colorednoise?branch=master)
+[![Codecov test
+coverage](https://codecov.io/gh/japilo/colorednoise/branch/master/graph/badge.svg)](https://app.codecov.io/gh/japilo/colorednoise?branch=master)
 [![Download_count](https://cranlogs.r-pkg.org/badges/grand-total/colorednoise)](https://CRAN.R-project.org/package=colorednoise)
 [![Paper_doi](https://img.shields.io/badge/doi-10.1111/oik.06438-orange.svg)](https://doi.org/10.1111/oik.06438)
 
