@@ -1,9 +1,5 @@
-library(purrr)
-library(data.table)
-context("Consistency in population simulations")
-
 test_that("unstructured_pop can produce blue noise populations", {
-    test_blue <- rerun(.n = 1000, unstructured_pop(start = 5000, timesteps = 50,
+    test_blue <- map(1:1000, ~unstructured_pop(start = 5000, timesteps = 50,
         survPhi = -0.5, survMean = 0.4, survSd = 0.05, fecundPhi = 0,
         fecundMean = 1.5, fecundSd = 0.2)) %>% map(setDT) %>%
       map(~.[, `:=`(est_surv = survivors/population, est_fecund = newborns/survivors)]) %>%
@@ -12,7 +8,7 @@ test_that("unstructured_pop can produce blue noise populations", {
 })
 
 test_that("unstructured_pop can produce red noise populations", {
-    test_red <- rerun(.n = 1000, unstructured_pop(start = 5000, timesteps = 50,
+    test_red <- map(1:1000, ~unstructured_pop(start = 5000, timesteps = 50,
         survPhi = 0.5, survMean = 0.4, survSd = 0.05, fecundPhi = 0,
         fecundMean = 1.5, fecundSd = 0.2)) %>% map(setDT) %>%
       map(~.[, `:=`(est_surv = survivors/population, est_fecund = newborns/survivors)]) %>%

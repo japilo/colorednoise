@@ -1,17 +1,12 @@
-library(colorednoise)
-library(purrr)
-library(data.table)
-context("Autocorrelation of colored noise")
-
 test_that("colored noise can produce blue noise", {
-    test_blue <- rerun(.n = 1000, colored_noise(timesteps = 100, mean = 0.5,
+    test_blue <- map(1:1000, ~colored_noise(timesteps = 100, mean = 0.5,
         sd = 0.2, phi = -0.5)) %>% map_dbl(autocorrelation) %>%
         mean()
     expect_true(-0.55 < test_blue && test_blue < -0.45)
 })
 
 test_that("colored noise can produce red noise", {
-    test_red <- rerun(.n = 1000, colored_noise(timesteps = 100, mean = 0.5,
+    test_red <- map(1:1000, ~colored_noise(timesteps = 100, mean = 0.5,
         sd = 0.2, phi = 0.5)) %>% map_dbl(autocorrelation) %>% mean()
     expect_true(0.55 > test_red && test_red > 0.45)
 })
@@ -41,4 +36,14 @@ test_that("colored_multi_rnorm can produce blue noise", {
     .[, .(V1_autocorr = autocorrelation(V1), V2_autocorr = autocorrelation(V2), V3_autocorr = autocorrelation(V3))] %>%
     as.numeric()
   expect_true(all(test < -0.4)==T)
+})
+
+test_that("Bias correction increases estimated autocorrelation", {
+  set.seed(180)
+  test_bias <- map(1:1000, ~colored_noise(timesteps = 100, mean = 0.5,
+        sd = 0.2, phi = 0.5)) %>% map_dbl(autocorrelation) %>% mean()
+  test_nobias <- map(1:1000, ~colored_noise(timesteps = 100, mean = 0.5,
+        sd = 0.2, phi = 0.5)) %>% map_dbl(autocorrelation, biasCorrection = F) %>% 
+        mean()
+  expect_true(test_bias > test_nobias)
 })
