@@ -42,10 +42,13 @@ autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
     survSd, fecundMean, fecundSd, replicates) {
     # Simulates a population for each combination of parameters
     # -----------
-    raw_sims <- cross_df(list(start = start, timesteps = timesteps,
+    param_grid <- as.data.table(expand.grid(start = start, timesteps = timesteps,
         survPhi = survPhi, fecundPhi = fecundPhi, survMean = survMean,
-        survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd)) %>%
-        rerun(.n = replicates, pmap(., unstructured_pop))
+        survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd,
+        stringsAsFactors = FALSE))
+    raw_sims <- map(seq_len(replicates), function(i) {
+        list(param_grid, pmap(param_grid, unstructured_pop))
+    })
     # Labels each simulation with the parameters that generated it
     # ------
     labeled_sims <- vector(mode = "list", replicates)
