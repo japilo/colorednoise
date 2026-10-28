@@ -40,12 +40,27 @@
 #' @export
 autocorr_sim <- function(timesteps, start, survPhi, fecundPhi, survMean,
     survSd, fecundMean, fecundSd, replicates) {
+    # Input validation
+    if (missing(timesteps) || missing(start) || missing(survPhi) || missing(fecundPhi) || missing(survMean) || missing(survSd) || missing(fecundMean) || missing(fecundSd) || missing(replicates)) {
+        stop("All parameters must be specified")
+    }
+    if (any(!is.numeric(c(timesteps, start, survPhi, fecundPhi, survMean, survSd, fecundMean, fecundSd, replicates)))) {
+        stop("All parameters must be numeric")
+    }
+    if (any(c(survMean, survSd) < 0 | c(survMean, survSd) > 1)) {
+        stop("Survival mean and SD must be between 0 and 1")
+    }
+    if (any(c(fecundMean, fecundSd) < 0)) {
+        stop("Fertility mean and SD must be greater than or equal to 0")
+    }
+    if (any(replicates < 1)) {
+        stop("Replicates must be at least 1")
+    }
     # Simulates a population for each combination of parameters
     # -----------
     param_grid <- as.data.table(expand.grid(start = start, timesteps = timesteps,
         survPhi = survPhi, fecundPhi = fecundPhi, survMean = survMean,
-        survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd,
-        stringsAsFactors = FALSE))
+        survSd = survSd, fecundMean = fecundMean, fecundSd = fecundSd))
     raw_sims <- map(seq_len(replicates), function(i) {
         list(param_grid, pmap(param_grid, unstructured_pop))
     })
